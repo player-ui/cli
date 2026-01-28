@@ -1,0 +1,27 @@
+{
+  "exclude": ["node_modules", "_backup", "bazel-*"],
+  "compilerOptions": {
+    "jsx": "react",
+    "emitDeclarationOnly": true,
+    "outDir": "./dist",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "downlevelIteration": true,
+    "target": "esnext",
+    "module": "commonjs",
+    "allowJs": false,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipDefaultLibCheck": true,
+    "noErrorTruncation": true,
+    "importHelpers": true,
+    "resolveJsonModule": true,
+    "composite": true,
+    "lib": ["DOM", "ESNext"],
+    "isolatedDeclarations": true
+  }
+}
