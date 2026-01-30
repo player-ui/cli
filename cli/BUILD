@@ -55,7 +55,7 @@ deps = [
 ]
 
 oclif_pipeline(
-    package_name = "@player-tools/cli",
+    package_name = "@player-cli/cli",
     build_deps = build_deps,
     deps = deps,
     manifest = False

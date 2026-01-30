@@ -1,5 +1,5 @@
 {
-  "name": "@player-tools/cli",
+  "name": "@player-cli/cli",
   "version": "0.0.0-PLACEHOLDER",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
