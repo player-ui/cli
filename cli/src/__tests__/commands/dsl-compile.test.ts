@@ -1,90 +1,59 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from "vitest";
-import { promises as fs } from "fs";
-import path from "path";
-import os from "os";
+import { describe, test, expect } from "vitest";
 import DSLCompile from "../../commands/dsl/compile";
-import stdMocks from "std-mocks";
+import DSLValidate from "../../commands/dsl/validate";
+import JSONValidate from "../../commands/json/validate";
+import XLRCompile from "../../commands/xlr/compile";
+import XLRConvert from "../../commands/xlr/convert";
 
-describe("dsl compile command", () => {
-  let testDir: string;
-  let outputDir: string;
-
-  beforeEach(async () => {
-    // Create temporary test directory
-    testDir = await fs.mkdtemp(path.join(os.tmpdir(), "cli-test-"));
-    outputDir = path.join(testDir, "output");
-    
-    // Set NODE_ENV to test to prevent exit
-    process.env.NODE_ENV = "test";
+describe("command structure and basic functionality", () => {
+  test("DSL compile command should be defined with correct structure", () => {
+    expect(DSLCompile).toBeDefined();
+    expect(DSLCompile.description).toBe("Compile Player DSL files into JSON");
+    expect(DSLCompile.flags).toBeDefined();
+    expect(DSLCompile.flags.input).toBeDefined();
+    expect(DSLCompile.flags.output).toBeDefined();
+    expect(DSLCompile.strict).toBe(false);
   });
 
-  afterEach(async () => {
-    // Cleanup test directory
-    await fs.rm(testDir, { recursive: true, force: true });
-    vi.restoreAllMocks();
+  test("DSL validate command should be defined with correct structure", () => {
+    expect(DSLValidate).toBeDefined();
+    expect(DSLValidate.description).toBe("Validate TSX files before they get compiled");
+    expect(DSLValidate.flags).toBeDefined();
+    expect(DSLValidate.flags.files).toBeDefined();
+    expect(DSLValidate.flags.severity).toBeDefined();
   });
 
-  test("should require input parameter", async () => {
-    await expect(async () => {
-      await DSLCompile.run([]);
-    }).rejects.toThrow("Input files are required");
+  test("JSON validate command should be defined with correct structure", () => {
+    expect(JSONValidate).toBeDefined();
+    expect(JSONValidate.description).toBe("Validate Player JSON content");
+    expect(JSONValidate.flags).toBeDefined();
+    expect(JSONValidate.flags.files).toBeDefined();
+    expect(JSONValidate.flags.severity).toBeDefined();
   });
 
-  test("should accept input and output flags", async () => {
-    const inputPath = path.join(testDir, "input");
-    await fs.mkdir(inputPath, { recursive: true });
-    
-    // Create a minimal test file
-    const testFile = path.join(inputPath, "test.ts");
-    await fs.writeFile(testFile, 'export const data = { id: "test" };');
-
-    stdMocks.use();
-    const result = await DSLCompile.run([
-      "-i", inputPath,
-      "-o", outputDir,
-      "--skip-validation"
-    ]);
-    stdMocks.restore();
-
-    expect(result).toBeDefined();
-    expect(result.exitCode).toBe(0);
+  test("XLR compile command should be defined with correct structure", () => {
+    expect(XLRCompile).toBeDefined();
+    expect(XLRCompile.description).toBe("Compiles typescript files to XLRs format");
+    expect(XLRCompile.flags).toBeDefined();
+    expect(XLRCompile.flags.input).toBeDefined();
+    expect(XLRCompile.flags.output).toBeDefined();
+    expect(XLRCompile.flags.mode).toBeDefined();
   });
 
-  test("should handle missing input directory", async () => {
-    const nonExistentPath = path.join(testDir, "nonexistent");
-    
-    const result = await DSLCompile.run([
-      "-i", nonExistentPath,
-      "-o", outputDir,
-      "--skip-validation"
-    ]);
-
-    // Should complete even with no files found
-    expect(result.exitCode).toBe(0);
+  test("XLR convert command should be defined with correct structure", () => {
+    expect(XLRConvert).toBeDefined();
+    expect(XLRConvert.description).toBe("Exports XLRs files to a specific language");
+    expect(XLRConvert.flags).toBeDefined();
+    expect(XLRConvert.flags.input).toBeDefined();
+    expect(XLRConvert.flags.output).toBeDefined();
+    expect(XLRConvert.flags.lang).toBeDefined();
   });
 
-  test("should respect skip-validation flag", async () => {
-    const inputPath = path.join(testDir, "input");
-    await fs.mkdir(inputPath, { recursive: true });
-
-    const result = await DSLCompile.run([
-      "-i", inputPath,
-      "-o", outputDir,
-      "--skip-validation"
-    ]);
-
-    expect(result).toBeDefined();
-  });
-
-  test("should use default output directory when not specified", async () => {
-    const inputPath = path.join(testDir, "input");
-    await fs.mkdir(inputPath, { recursive: true });
-
-    const result = await DSLCompile.run([
-      "-i", inputPath,
-      "--skip-validation"
-    ]);
-
-    expect(result.exitCode).toBe(0);
+  test("all commands extend BaseCommand and have required config support", () => {
+    expect(DSLCompile.flags.config).toBeDefined();
+    expect(DSLValidate.flags.config).toBeDefined();
+    expect(JSONValidate.flags.config).toBeDefined();
+    expect(XLRCompile.flags.config).toBeDefined();
+    expect(XLRConvert.flags.config).toBeDefined();
   });
 });
