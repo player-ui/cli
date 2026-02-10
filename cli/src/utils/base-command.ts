@@ -201,9 +201,17 @@ export abstract class BaseCommand extends Command {
     return compilerContext;
   }
 
-  exit(code?: number): void {
-    if (process.env.NODE_ENV !== "test") {
-      super.exit(code);
+  // Override exit to prevent process termination during tests
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  override exit(exitCode = 0): never {
+    if (process.env.NODE_ENV === "test") {
+      // In test mode, skip the actual exit process
+      // We satisfy the 'never' return type by using type assertion
+      // since tests need the function to return normally
+      return undefined as never;
     }
+    
+    // In production, delegate to parent which terminates the process
+    return super.exit(exitCode);
   }
 }
