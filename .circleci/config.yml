@@ -16,7 +16,7 @@ executors:
     docker:
       - image: docker.io/playerui/bazel-docker-slim:18
     working_directory: ~/tools
-    resource_class: xlarge
+    resource_class: medium
     environment:
       TZ: "/usr/share/zoneinfo/America/Los_Angeles"
 
@@ -27,17 +27,12 @@ commands:
       - attach_workspace:
           at: ~/tools
 
-      - restore_cache:
-          keys:
-            - v1-bazel-cache-core-{{ .Branch }}-{{ .Revision }}
-            - v1-bazel-cache-core-{{ .Branch }}
-            - v1-bazel-cache-core-main
-
       - run: echo "//registry.npmjs.com/:_authToken=$NPM_TOKEN" >> ~/.npmrc
       - run: echo -e $GPG_KEY | gpg --import --batch
       - run: |
           source ~/.bashrc
           npx auto shipit --only-graduate-with-release-label -vv
+
   check_branch_status:
     description: "Check if the branch is clean after the build"
     steps:
@@ -55,11 +50,8 @@ jobs:
   setup:
     executor: base
     steps:
-      - checkout
-
-      - restore_cache:
-          keys:
-            - v1-dependencies-{ { checksum "package.json" }}
+      - checkout:
+          method: full
 
       - persist_to_workspace:
           root: .
@@ -98,12 +90,6 @@ jobs:
     steps:
       - attach_workspace:
           at: ~/tools
-
-      - restore_cache:
-          keys:
-            - v1-bazel-cache-core-{{ .Branch }}-{{ .Revision }}
-            - v1-bazel-cache-core-{{ .Branch }}
-            - v1-bazel-cache-core-main
 
       - run: |
           bazel coverage --config=ci -- $(bazel query "kind(js_test, //...)" --output label 2>/dev/null | tr '\n' ' ')
