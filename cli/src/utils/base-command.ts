@@ -202,7 +202,6 @@ export abstract class BaseCommand extends Command {
   }
 
   // Override exit to prevent process termination during tests
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   override exit(exitCode = 0): never {
     if (process.env.NODE_ENV === "test") {
       // In test mode, skip the actual exit process
