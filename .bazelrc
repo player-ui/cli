@@ -1,0 +1,25 @@
+test --test_output=errors
+common --experimental_generate_llvm_lcov
+
+# honor the setting of `skipLibCheck` in the tsconfig.json file
+common --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig
+
+# Cache Config
+common --bes_results_url=https://app.buildbuddy.io/invocation/
+common --bes_backend=grpcs://remote.buildbuddy.io
+common --remote_cache=grpcs://remote.buildbuddy.io
+common --remote_download_toplevel
+common --remote_timeout=3600
+common --build_metadata=REPO_URL=https://github.com/player-ui/cli.git
+common --remote_cache_compression --remote_cache_async
+
+# CI Config 
+common:ci --build_metadata=ROLE=CI
+common:ci --local_resources=cpu=4
+common:ci --local_resources=memory=8000
+
+# Release Config
+common:release --config=ci --stamp --workspace_status_command=./scripts/workspace-status.sh
+
+# Try and import local bazel config
+try-import %workspace%/.bazelrc.local
