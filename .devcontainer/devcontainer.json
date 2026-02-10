@@ -1,0 +1,4 @@
+{
+  "image": "docker.io/playerui/bazel-docker-slim:18",
+  "features": {}
+}
