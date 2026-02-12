@@ -1,5 +1,6 @@
 test --test_output=errors
 common --experimental_generate_llvm_lcov
+coverage --combined_report=lcov
 
 # honor the setting of `skipLibCheck` in the tsconfig.json file
 common --@aspect_rules_ts//ts:skipLibCheck=honor_tsconfig
