@@ -21,6 +21,8 @@ type TaskResult = Array<Omit<CompletedTask<CompilationResult, any>, "run">>;
 export default class DSLCompile extends BaseCommand {
   static description = "Compile Player DSL files into JSON";
 
+  static strict = false;
+
   static flags = {
     ...BaseCommand.flags,
     input: Flags.string({
