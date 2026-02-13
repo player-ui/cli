@@ -208,9 +208,9 @@ export abstract class BaseCommand extends Command {
       // We satisfy the 'never' return type by using type assertion
       // since tests need the function to return normally
       return undefined as never;
+    } else {
+      // In production, delegate to parent which terminates the process
+      return super.exit(exitCode);
     }
-    
-    // In production, delegate to parent which terminates the process
-    return super.exit(exitCode);
   }
 }
