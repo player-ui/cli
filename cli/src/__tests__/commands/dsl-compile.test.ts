@@ -17,7 +17,9 @@ describe("command structure and basic functionality", () => {
 
   test("DSL validate command should be defined with correct structure", () => {
     expect(DSLValidate).toBeDefined();
-    expect(DSLValidate.description).toBe("Validate TSX files before they get compiled");
+    expect(DSLValidate.description).toBe(
+      "Validate TSX files before they get compiled",
+    );
     expect(DSLValidate.flags).toBeDefined();
     expect(DSLValidate.flags.files).toBeDefined();
     expect(DSLValidate.flags.severity).toBeDefined();
@@ -33,7 +35,9 @@ describe("command structure and basic functionality", () => {
 
   test("XLR compile command should be defined with correct structure", () => {
     expect(XLRCompile).toBeDefined();
-    expect(XLRCompile.description).toBe("Compiles typescript files to XLRs format");
+    expect(XLRCompile.description).toBe(
+      "Compiles typescript files to XLRs format",
+    );
     expect(XLRCompile.flags).toBeDefined();
     expect(XLRCompile.flags.input).toBeDefined();
     expect(XLRCompile.flags.output).toBeDefined();
@@ -42,7 +46,9 @@ describe("command structure and basic functionality", () => {
 
   test("XLR convert command should be defined with correct structure", () => {
     expect(XLRConvert).toBeDefined();
-    expect(XLRConvert.description).toBe("Exports XLRs files to a specific language");
+    expect(XLRConvert.description).toBe(
+      "Exports XLRs files to a specific language",
+    );
     expect(XLRConvert.flags).toBeDefined();
     expect(XLRConvert.flags.input).toBeDefined();
     expect(XLRConvert.flags.output).toBeDefined();
