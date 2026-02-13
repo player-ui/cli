@@ -16,7 +16,7 @@ common --remote_cache_compression --remote_cache_async
 # CI Config 
 common:ci --build_metadata=ROLE=CI
 common:ci --local_resources=cpu=2
-common:ci --local_resources=memory=8000
+common:ci --local_resources=memory=4000
 
 # Release Config
 common:release --config=ci --stamp --workspace_status_command=./scripts/workspace-status.sh
