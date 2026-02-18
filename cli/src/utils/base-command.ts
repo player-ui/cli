@@ -136,7 +136,7 @@ export abstract class BaseCommand extends Command {
   }
 
   private async readConfig(): Promise<PlayerConfigResolvedShape> {
-    const { flags } = await this.parse(BaseCommand);
+    const { flags } = await this.parse();
     const configFile = await this.loadConfig(flags.config);
     return this.resolveConfig(configFile?.config);
   }
@@ -201,9 +201,18 @@ export abstract class BaseCommand extends Command {
     return compilerContext;
   }
 
-  exit(code?: number): void {
-    if (process.env.NODE_ENV !== "test") {
-      super.exit(code);
+  // Override exit to prevent process termination during tests
+  override exit(exitCode = 0): never {
+    if (process.env.NODE_ENV === "test") {
+      // In test mode, skip the actual exit process
+      // We satisfy the 'never' return type by using type assertion
+      // since tests need the function to return normally
+      return undefined as never;
+    } else if (exitCode != 0) {
+      // In production, delegate to parent which terminates the process
+      return super.exit(exitCode);
+    } else {
+      return undefined as never;
     }
   }
 }
