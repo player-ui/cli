@@ -1,5 +1,5 @@
-import type { DSLCompiler, SerializeContext } from "@player-tools/dsl";
-import { isDefaultCompilerContentType } from "@player-tools/dsl";
+import type { DSLCompiler, SerializeContext } from "@player-lang/react-dsl";
+import { isDefaultCompilerContentType } from "@player-lang/react-dsl";
 import { AsyncSeriesBailHook } from "tapable-ts";
 
 export interface identifyContentReturn {

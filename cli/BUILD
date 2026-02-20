@@ -20,12 +20,12 @@ build_deps = [
 ]
 
 deps = [
-    "//:node_modules/@player-tools/dsl",
-    "//:node_modules/@player-tools/json-language-service",
-    "//:node_modules/@player-tools/xlr",
-    "//:node_modules/@player-tools/xlr-converters",
-    "//:node_modules/@player-tools/xlr-sdk",
-    "//:node_modules/@player-tools/xlr-utils",
+    "//:node_modules/@player-lang/react-dsl",
+    "//:node_modules/@player-lang/json-language-service",
+    "//:node_modules/@xlr-lib/xlr",
+    "//:node_modules/@xlr-lib/xlr-converters",
+    "//:node_modules/@xlr-lib/xlr-sdk",
+    "//:node_modules/@xlr-lib/xlr-utils",
     "//:node_modules/@babel/plugin-transform-react-jsx-source",
     "//:node_modules/@babel/preset-env",
     "//:node_modules/@babel/preset-react",

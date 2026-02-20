@@ -1,10 +1,10 @@
-import type { TopLevelNode } from "@player-tools/xlr-utils";
-import { isNodeExported, isTopLevelNode } from "@player-tools/xlr-utils";
+import type { TopLevelNode } from "@xlr-lib/xlr-utils";
+import { isNodeExported, isTopLevelNode } from "@xlr-lib/xlr-utils";
 import path from "path";
 import ts from "typescript";
 import fs from "fs";
-import type { Manifest, NamedType, RefNode } from "@player-tools/xlr";
-import type { TsConverter } from "@player-tools/xlr-converters";
+import type { Manifest, NamedType, RefNode } from "@xlr-lib/xlr";
+import type { TsConverter } from "@xlr-lib/xlr-converters";
 import type { VisitorProps } from "./types";
 import { PLAYER_PLUGIN_INTERFACE_NAME } from "../consts";
 

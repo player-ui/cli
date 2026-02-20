@@ -8,6 +8,7 @@ archive_override(
   urls = ["https://github.com/player-ui/rules_player/archive/refs/tags/v2.3.0.tar.gz"],
   integrity = "sha256-ic72uLj5+fdjFXxwmtRrHGPlWA3ewTXB6Gx6TRMKgh4="
 )
+
 bazel_dep(name = "aspect_bazel_lib", version = "2.17.1")
 bazel_dep(name = "aspect_rules_js", version = "2.3.7")
 bazel_dep(name = "bazel_skylib", version = "1.8.1")

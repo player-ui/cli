@@ -1,7 +1,7 @@
 import type {
   PlayerLanguageService,
   PlayerLanguageServicePlugin,
-} from "@player-tools/json-language-service";
+} from "@player-lang/json-language-service";
 import type { PlayerCLIPlugin } from "./index";
 
 /**

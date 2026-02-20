@@ -1,6 +1,6 @@
-import type { PlayerLanguageService } from "@player-tools/json-language-service";
+import type { PlayerLanguageService } from "@player-lang/json-language-service";
 import type { PlayerCLIPlugin } from "./index";
-import { TSManifest } from "@player-tools/xlr";
+import { TSManifest } from "@xlr-lib/xlr";
 
 /** Loads XLRs into the LSP via the manifest.js file */
 export interface LSPAssetsPluginModuleConfig {
