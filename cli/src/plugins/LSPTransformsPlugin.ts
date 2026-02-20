@@ -1,5 +1,5 @@
-import type { PlayerLanguageService } from "@player-tools/json-language-service";
-import type { TransformFunction } from "@player-tools/xlr";
+import type { PlayerLanguageService } from "@player-lang/json-language-service";
+import type { TransformFunction } from "@xlr-lib/xlr";
 import type { PlayerCLIPlugin } from "./index";
 
 /**

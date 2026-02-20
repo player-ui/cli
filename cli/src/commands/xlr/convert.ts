@@ -2,8 +2,8 @@ import { Flags } from "@oclif/core";
 import path from "path";
 import fs from "fs";
 import chalk from "chalk";
-import type { ExportTypes } from "@player-tools/xlr-sdk";
-import { XLRSDK } from "@player-tools/xlr-sdk";
+import type { ExportTypes } from "@xlr-lib/xlr-sdk";
+import { XLRSDK } from "@xlr-lib/xlr-sdk";
 import logSymbols from "log-symbols";
 import { BaseCommand } from "../../utils/base-command";
 

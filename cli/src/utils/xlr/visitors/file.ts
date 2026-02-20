@@ -1,4 +1,4 @@
-import type { Manifest } from "@player-tools/xlr";
+import type { Manifest } from "@xlr-lib/xlr";
 import path from "path";
 import fs from "fs";
 import type { VisitorProps } from "./types";
