@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import figureSet from "figures";
-import type { SerializeType } from "@player-tools/dsl";
+import type { SerializeType } from "@player-lang/react-dsl";
 import type { TaskProgressRenderer } from "./task-runner";
 import { getTaskSymbol } from "./diag-renderer";
 

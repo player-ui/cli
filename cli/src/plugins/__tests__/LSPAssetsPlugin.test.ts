@@ -1,4 +1,4 @@
-import { PlayerLanguageService } from "@player-tools/json-language-service";
+import { PlayerLanguageService } from "@player-lang/json-language-service";
 import { vi, test, expect, describe, beforeEach } from "vitest";
 import { LSPAssetsPlugin } from "../LSPAssetsPlugin";
 

@@ -1,4 +1,4 @@
-import type { TsConverter } from "@player-tools/xlr-converters";
+import type { TsConverter } from "@xlr-lib/xlr-converters";
 import type ts from "typescript";
 
 export interface VisitorProps {

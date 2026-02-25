@@ -10,17 +10,17 @@ interface DependencyMap {
   [dependencyVersion: string]: string[];
 }
 
-/** A command to get @player-ui/@player-tools dependency versions and issue warnings/recommendations based on them */
+/** A command to get @player-ui/@player-lang dependency versions and issue warnings/recommendations based on them */
 export default class DependencyVersionsCheck extends BaseCommand {
   static summary =
-    "Checks for @player-ui/@player-tools dependency version mismatches and issues warnings/solutions accordingly";
+    "Checks for @player-ui/@player-lang dependency version mismatches and issues warnings/solutions accordingly";
 
   static description = `Consider the following:
   - The interpretation of TOP-LEVEL and NESTED dependencies is as follows:
     a. TOP-LEVEL dependencies only have one 'node_modules' in their path
     b. NESTED dependencies have more than one 'node_modules' in their path
-  - @player-ui/@player-tools dependencies are fetched not only from inside the 'node_modules' at the top of the repository in which it is run but also from 'node_modules' in sub-directories.
-  For example, if you have some 'node_modules' inside of a 'packages' folder that contains @player-ui/@player-tools dependencies, then these will also be fetched.
+  - @player-ui/@player-lang dependencies are fetched not only from inside the 'node_modules' at the top of the repository in which it is run but also from 'node_modules' in sub-directories.
+  For example, if you have some 'node_modules' inside of a 'packages' folder that contains @player-ui/@player-lang dependencies, then these will also be fetched.
   The display of such dependencies also depends on the first bullet point.
   `;
 
@@ -112,7 +112,7 @@ export default class DependencyVersionsCheck extends BaseCommand {
     }
 
     console.log(
-      "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+      "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
     );
 
     let packageJsons = glob.sync(
@@ -265,7 +265,7 @@ export default class DependencyVersionsCheck extends BaseCommand {
     }
 
     if (topLevelVersionsExist) {
-      console.log("\nTOP-LEVEL @player-ui/@player-tools DEPENDENCIES:");
+      console.log("\nTOP-LEVEL @player-ui/@player-lang DEPENDENCIES:");
       printTable(
         versionToTopLevelDependencyMap,
         sortedTopLevelVersions,
@@ -274,7 +274,7 @@ export default class DependencyVersionsCheck extends BaseCommand {
     }
 
     if (nestedVersionsExist) {
-      console.log("\nNESTED @player-ui/@player-tools DEPENDENCIES:");
+      console.log("\nNESTED @player-ui/@player-lang DEPENDENCIES:");
       printTable(
         versionToNestedDependencyMap,
         sortedNestedVersions,
@@ -290,28 +290,28 @@ export default class DependencyVersionsCheck extends BaseCommand {
     ) {
       if (singleVersionsMatch) {
         console.log(
-          "Unique top-level and nested @player-ui/@player-tools versions match. ",
+          "Unique top-level and nested @player-ui/@player-lang versions match. ",
         );
       }
 
       if (!topLevelVersionsExist && nestedVersions.length === 1) {
         console.log(
-          `No top-level @player-ui/@player-tools dependencies exist. Only a single nested @player-ui/@player-tools version exists, ${nestedVersions[0]}`,
+          `No top-level @player-ui/@player-lang dependencies exist. Only a single nested @player-ui/@player-lang version exists, ${nestedVersions[0]}`,
         );
       }
 
       if (!nestedVersionsExist && topLevelVersions.length === 1) {
         console.log(
-          `No nested @player-ui/@player-tools dependencies exist. Only a single top-level @player-ui/@player-tools version exists, ${topLevelVersions[0]}`,
+          `No nested @player-ui/@player-lang dependencies exist. Only a single top-level @player-ui/@player-lang version exists, ${topLevelVersions[0]}`,
         );
       }
 
       if (!nestedVersionsExist && !topLevelVersionsExist) {
-        console.log("No @player-ui/@player-tools dependencies exist.");
+        console.log("No @player-ui/@player-lang dependencies exist.");
       }
 
       console.log(
-        "There are no issues related to @player-ui/@player-tools dependency versioning. You are good to go! ",
+        "There are no issues related to @player-ui/@player-lang dependency versioning. You are good to go! ",
       );
       this.exit(results.exitCode);
       return results;
@@ -320,48 +320,48 @@ export default class DependencyVersionsCheck extends BaseCommand {
     console.log(chalkNegative("WARNINGS:"));
     if (multipleTopLevelVersionsDetected) {
       console.log(
-        "- There are multiple top-level @player-ui/@player-tools dependency versions.",
+        "- There are multiple top-level @player-ui/@player-lang dependency versions.",
       );
     }
 
     if (multipleNestedVersionsDetected) {
       console.log(
-        "- There are multiple nested @player-ui/@player-tools dependency versions.",
+        "- There are multiple nested @player-ui/@player-lang dependency versions.",
       );
     }
 
     if (singleVersionsMismatch) {
       console.log(
-        "- Mismatch between the top-level and the nested @player-ui/@player-tools dependency.",
+        "- Mismatch between the top-level and the nested @player-ui/@player-lang dependency.",
       );
     }
 
     console.log(chalkPositive("RECOMMENDATIONS:"));
     if (multipleTopLevelVersionsDetected) {
       console.log(
-        `- Resolve all top-level @player-ui/@player-tools dependencies to the same version. Consider updating them to the latest player version you have, ${highestTopLevelVersion}. When all top-level @player-ui/@player-tools dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-tools dependencies.`,
+        `- Resolve all top-level @player-ui/@player-lang dependencies to the same version. Consider updating them to the latest player version you have, ${highestTopLevelVersion}. When all top-level @player-ui/@player-lang dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-lang dependencies.`,
       );
     } else if (highestTopLevelVersion && highestNestedVersion) {
       // highestTopLevelVersion && highestNestedVersion defined means: single top-level version, one or more nested versions
       if (cmp(highestTopLevelVersion, highestNestedVersion) >= 1) {
         // when only a single top-level version is detected, it is simply the highest
         console.log(
-          `- The highest @player-ui/@player-tools version is ${highestTopLevelVersion} at the top level. Please add resolutions for all nested @player-ui/@player-tools versions to this version or bump the nested versions to it.`,
+          `- The highest @player-ui/@player-lang version is ${highestTopLevelVersion} at the top level. Please add resolutions for all nested @player-ui/@player-lang versions to this version or bump the nested versions to it.`,
         );
       } else {
         console.log(
-          `- The highest @player-ui/@player-tools version is ${highestNestedVersion} at the nested level. Please bump the top-level version, ${highestTopLevelVersion}, to ${highestNestedVersion}.`,
+          `- The highest @player-ui/@player-lang version is ${highestNestedVersion} at the nested level. Please bump the top-level version, ${highestTopLevelVersion}, to ${highestNestedVersion}.`,
         );
         if (multipleNestedVersionsDetected) {
           console.log(
-            `- Also, please add resolutions or bump the versions for nested @player-ui/@player-tools dependencies whose version is not ${highestNestedVersion}.`,
+            `- Also, please add resolutions or bump the versions for nested @player-ui/@player-lang dependencies whose version is not ${highestNestedVersion}.`,
           );
         }
       }
     } else if (highestNestedVersion && multipleNestedVersionsDetected) {
       // no top-level version defined, multiple nested versions
       console.log(
-        `- The highest @player-ui/@player-tools version is ${highestNestedVersion} at the nested level. Please add resolutions for all nested @player-ui/@player-tools versions to this version or bump the nested versions to it.`,
+        `- The highest @player-ui/@player-lang version is ${highestNestedVersion} at the nested level. Please add resolutions for all nested @player-ui/@player-lang versions to this version or bump the nested versions to it.`,
       );
     }
 

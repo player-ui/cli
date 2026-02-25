@@ -1,7 +1,7 @@
-import type { PlayerLanguageService } from "@player-tools/json-language-service";
-import type { DSLCompiler } from "@player-tools/dsl";
-import type { ExportTypes } from "@player-tools/xlr-sdk";
-import type { TransformFunction } from "@player-tools/xlr";
+import type { PlayerLanguageService } from "@player-lang/json-language-service";
+import type { DSLCompiler } from "@player-lang/react-dsl";
+import type { ExportTypes } from "@xlr-lib/xlr-sdk";
+import type { TransformFunction } from "@xlr-lib/xlr";
 import type { CompilationContext } from "../utils/compilation-context";
 
 export * from "./LSPAssetsPlugin";

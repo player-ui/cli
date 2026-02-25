@@ -1,10 +1,10 @@
 import { Command, Flags } from "@oclif/core";
 import path from "path";
 import { cosmiconfig } from "cosmiconfig";
-import { PlayerLanguageService } from "@player-tools/json-language-service";
-import { DSLCompiler } from "@player-tools/dsl";
-import type { ExportTypes } from "@player-tools/xlr-sdk";
-import type { TransformFunction } from "@player-tools/xlr";
+import { PlayerLanguageService } from "@player-lang/json-language-service";
+import { DSLCompiler } from "@player-lang/react-dsl";
+import type { ExportTypes } from "@xlr-lib/xlr-sdk";
+import type { TransformFunction } from "@xlr-lib/xlr";
 import type {
   PlayerConfigFileShape,
   PlayerConfigResolvedShape,

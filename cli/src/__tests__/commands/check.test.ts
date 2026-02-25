@@ -76,7 +76,7 @@ beforeEach(() => {
   );
 });
 
-describe("checks @player-ui/@player-tools versions and outputs warnings/recommendations", () => {
+describe("checks @player-ui/@player-lang versions and outputs warnings/recommendations", () => {
   test("should issue error message due to not being run in the root directory", async () => {
     cwdSpy.mockReturnValue(
       "/Users/username/player/utilities/cli/src/__tests__",
@@ -121,11 +121,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency       
@@ -135,7 +135,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                      
@@ -144,10 +144,10 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
         ",
           ],
           [
-            "Unique top-level and nested @player-ui/@player-tools versions match. ",
+            "Unique top-level and nested @player-ui/@player-lang versions match. ",
           ],
           [
-            "There are no issues related to @player-ui/@player-tools dependency versioning. You are good to go! ",
+            "There are no issues related to @player-ui/@player-lang dependency versioning. You are good to go! ",
           ],
         ]
       `);
@@ -178,11 +178,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency       
@@ -191,10 +191,10 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
         ",
           ],
           [
-            "No nested @player-ui/@player-tools dependencies exist. Only a single top-level @player-ui/@player-tools version exists, 3.11.0",
+            "No nested @player-ui/@player-lang dependencies exist. Only a single top-level @player-ui/@player-lang version exists, 3.11.0",
           ],
           [
-            "There are no issues related to @player-ui/@player-tools dependency versioning. You are good to go! ",
+            "There are no issues related to @player-ui/@player-lang dependency versioning. You are good to go! ",
           ],
         ]
       `);
@@ -224,11 +224,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                      
@@ -237,10 +237,10 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
         ",
           ],
           [
-            "No top-level @player-ui/@player-tools dependencies exist. Only a single nested @player-ui/@player-tools version exists, 3.11.0",
+            "No top-level @player-ui/@player-lang dependencies exist. Only a single nested @player-ui/@player-lang version exists, 3.11.0",
           ],
           [
-            "There are no issues related to @player-ui/@player-tools dependency versioning. You are good to go! ",
+            "There are no issues related to @player-ui/@player-lang dependency versioning. You are good to go! ",
           ],
         ]
       `);
@@ -264,13 +264,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
-            "No @player-ui/@player-tools dependencies exist.",
+            "No @player-ui/@player-lang dependencies exist.",
           ],
           [
-            "There are no issues related to @player-ui/@player-tools dependency versioning. You are good to go! ",
+            "There are no issues related to @player-ui/@player-lang dependency versioning. You are good to go! ",
           ],
         ]
       `);
@@ -320,11 +320,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency       
@@ -334,7 +334,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                      
@@ -346,13 +346,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- Mismatch between the top-level and the nested @player-ui/@player-tools dependency.",
+            "- Mismatch between the top-level and the nested @player-ui/@player-lang dependency.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- The highest @player-ui/@player-tools version is 3.30.1 at the nested level. Please bump the top-level version, 3.11.0, to 3.30.1.",
+            "- The highest @player-ui/@player-lang version is 3.30.1 at the nested level. Please bump the top-level version, 3.11.0, to 3.30.1.",
           ],
         ]
       `);
@@ -395,11 +395,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency        
@@ -415,7 +415,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                           
@@ -433,16 +433,16 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple top-level @player-ui/@player-tools dependency versions.",
+            "- There are multiple top-level @player-ui/@player-lang dependency versions.",
           ],
           [
-            "- There are multiple nested @player-ui/@player-tools dependency versions.",
+            "- There are multiple nested @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- Resolve all top-level @player-ui/@player-tools dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-tools dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-tools dependencies.",
+            "- Resolve all top-level @player-ui/@player-lang dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-lang dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-lang dependencies.",
           ],
         ]
       `);
@@ -478,11 +478,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                           
@@ -500,13 +500,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple nested @player-ui/@player-tools dependency versions.",
+            "- There are multiple nested @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- The highest @player-ui/@player-tools version is 4.37.3 at the nested level. Please add resolutions for all nested @player-ui/@player-tools versions to this version or bump the nested versions to it.",
+            "- The highest @player-ui/@player-lang version is 4.37.3 at the nested level. Please add resolutions for all nested @player-ui/@player-lang versions to this version or bump the nested versions to it.",
           ],
         ]
       `);
@@ -542,11 +542,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency       
@@ -556,7 +556,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                           
@@ -574,13 +574,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple nested @player-ui/@player-tools dependency versions.",
+            "- There are multiple nested @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- The highest @player-ui/@player-tools version is 4.37.3 at the top level. Please add resolutions for all nested @player-ui/@player-tools versions to this version or bump the nested versions to it.",
+            "- The highest @player-ui/@player-lang version is 4.37.3 at the top level. Please add resolutions for all nested @player-ui/@player-lang versions to this version or bump the nested versions to it.",
           ],
         ]
       `);
@@ -617,11 +617,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency       
@@ -631,7 +631,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                           
@@ -649,16 +649,16 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple nested @player-ui/@player-tools dependency versions.",
+            "- There are multiple nested @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- The highest @player-ui/@player-tools version is 4.37.3 at the nested level. Please bump the top-level version, 3.11.0, to 4.37.3.",
+            "- The highest @player-ui/@player-lang version is 4.37.3 at the nested level. Please bump the top-level version, 3.11.0, to 4.37.3.",
           ],
           [
-            "- Also, please add resolutions or bump the versions for nested @player-ui/@player-tools dependencies whose version is not 4.37.3.",
+            "- Also, please add resolutions or bump the versions for nested @player-ui/@player-lang dependencies whose version is not 4.37.3.",
           ],
         ]
       `);
@@ -694,11 +694,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency        
@@ -716,13 +716,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple top-level @player-ui/@player-tools dependency versions.",
+            "- There are multiple top-level @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- Resolve all top-level @player-ui/@player-tools dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-tools dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-tools dependencies.",
+            "- Resolve all top-level @player-ui/@player-lang dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-lang dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-lang dependencies.",
           ],
         ]
       `);
@@ -759,11 +759,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency        
@@ -779,7 +779,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                      
@@ -791,13 +791,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple top-level @player-ui/@player-tools dependency versions.",
+            "- There are multiple top-level @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- Resolve all top-level @player-ui/@player-tools dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-tools dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-tools dependencies.",
+            "- Resolve all top-level @player-ui/@player-lang dependencies to the same version. Consider updating them to the latest player version you have, 4.37.3. When all top-level @player-ui/@player-lang dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-lang dependencies.",
           ],
         ]
       `);
@@ -834,11 +834,11 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "To add string pattern(s) for files to exclude, consider adding them after the -i flag.",
           ],
           [
-            "Inspecting the @player-ui/@player-tools dependencies in the current repository...",
+            "Inspecting the @player-ui/@player-lang dependencies in the current repository...",
           ],
           [
             "
-        TOP-LEVEL @player-ui/@player-tools DEPENDENCIES:",
+        TOP-LEVEL @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency        
@@ -854,7 +854,7 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
           ],
           [
             "
-        NESTED @player-ui/@player-tools DEPENDENCIES:",
+        NESTED @player-ui/@player-lang DEPENDENCIES:",
           ],
           [
             "Version  How to find dependency                      
@@ -866,13 +866,13 @@ describe("checks @player-ui/@player-tools versions and outputs warnings/recommen
             "WARNINGS:",
           ],
           [
-            "- There are multiple top-level @player-ui/@player-tools dependency versions.",
+            "- There are multiple top-level @player-ui/@player-lang dependency versions.",
           ],
           [
             "RECOMMENDATIONS:",
           ],
           [
-            "- Resolve all top-level @player-ui/@player-tools dependencies to the same version. Consider updating them to the latest player version you have, 4.20.5. When all top-level @player-ui/@player-tools dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-tools dependencies.",
+            "- Resolve all top-level @player-ui/@player-lang dependencies to the same version. Consider updating them to the latest player version you have, 4.20.5. When all top-level @player-ui/@player-lang dependencies are resolved, run the current CLI again to obtain recommendations about nested @player-ui/@player-lang dependencies.",
           ],
         ]
       `);
