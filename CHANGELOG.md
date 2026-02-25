@@ -1,3 +1,23 @@
+# 0.1.1-next.1 (Wed Feb 25 2026)
+
+### Release Notes
+
+#### Use New Dependencies ([#7](https://github.com/player-ui/cli/pull/7))
+
+Update dependencies to use versions form broken out packages
+
+---
+
+#### 🚀 Enhancement
+
+- Use New Dependencies [#7](https://github.com/player-ui/cli/pull/7) ([@KetanReddy](https://github.com/KetanReddy))
+
+#### Authors: 1
+
+- Ketan Reddy ([@KetanReddy](https://github.com/KetanReddy))
+
+---
+
 # 0.1.1-next.0 (Wed Feb 11 2026)
 
 ### Release Notes
