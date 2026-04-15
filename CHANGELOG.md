@@ -1,3 +1,23 @@
+# 0.1.1-next.2 (Tue Apr 14 2026)
+
+### Release Notes
+
+#### Backport changes ([#8](https://github.com/player-ui/cli/pull/8))
+
+Bring in upstream functionality for supporting Schema Validation from [this](https://github.com/player-ui/tools/pull/242) PR.
+
+---
+
+#### 🐛 Bug Fix
+
+- Backport changes [#8](https://github.com/player-ui/cli/pull/8) ([@KetanReddy](https://github.com/KetanReddy))
+
+#### Authors: 1
+
+- Ketan Reddy ([@KetanReddy](https://github.com/KetanReddy))
+
+---
+
 # 0.1.1-next.1 (Wed Feb 25 2026)
 
 ### Release Notes
