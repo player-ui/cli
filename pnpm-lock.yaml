@@ -36,11 +36,11 @@ importers:
         specifier: ^1.9.0
         version: 1.10.11(@oclif/config@1.18.17)
       '@player-lang/json-language-service':
-        specifier: 0.0.2-next.0
-        version: 0.0.2-next.0
+        specifier: 0.0.2-next.1
+        version: 0.0.2-next.1
       '@player-lang/react-dsl':
-        specifier: 0.0.2-next.0
-        version: 0.0.2-next.0(@types/react@18.3.27)(react@18.3.1)
+        specifier: 0.0.2-next.1
+        version: 0.0.2-next.1(@types/react@18.3.27)(react@18.3.1)
       '@types/babel__register':
         specifier: ^7.17.0
         version: 7.17.3
@@ -57,17 +57,17 @@ importers:
         specifier: ^1.0.1
         version: 1.0.4
       '@xlr-lib/xlr':
-        specifier: 0.1.1-next.1
-        version: 0.1.1-next.1
+        specifier: 0.1.1-next.4
+        version: 0.1.1-next.4
       '@xlr-lib/xlr-converters':
-        specifier: ^0.1.1-next.1
-        version: 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
+        specifier: 0.1.1-next.4
+        version: 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
       '@xlr-lib/xlr-sdk':
-        specifier: 0.1.1-next.1
-        version: 0.1.1-next.1(typescript@5.5.4)
+        specifier: 0.1.1-next.4
+        version: 0.1.1-next.4(typescript@5.5.4)
       '@xlr-lib/xlr-utils':
-        specifier: 0.1.1-next.1
-        version: 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
+        specifier: 0.1.1-next.4
+        version: 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
       chalk:
         specifier: ^4.0.1
         version: 4.1.2
@@ -1667,11 +1667,11 @@ packages:
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==, tarball: https://registry.npmjs.org/@pkgr/core/-/core-0.2.9.tgz}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
 
-  '@player-lang/json-language-service@0.0.2-next.0':
-    resolution: {integrity: sha512-OBwJZLEr+FJs8+/zNjlhBW7Ptqv6RcrEkd9EtsLXLhgT8wGdBXRrdW/Zs/e6MujczUzU3SodYMY6pqFrzqe/pA==, tarball: https://registry.npmjs.org/@player-lang/json-language-service/-/json-language-service-0.0.2-next.0.tgz}
+  '@player-lang/json-language-service@0.0.2-next.1':
+    resolution: {integrity: sha512-+seD2rFBa+tCIKe8R8cATkd3+e0n9r5/NnNDvplnnJ+bUHNkuK3+Sjv6EoRahriVsGQIk08d6n0ycdQ+bYFCfA==, tarball: https://registry.npmjs.org/@player-lang/json-language-service/-/json-language-service-0.0.2-next.1.tgz}
 
-  '@player-lang/react-dsl@0.0.2-next.0':
-    resolution: {integrity: sha512-pf9AJIovEcsS99okM5CXCxlmklk2MSOiHD4i9prK4sbhlMiZetrM9S+Phl5gY5fzf38Y3QhPZoN5jWLKwYxE9g==, tarball: https://registry.npmjs.org/@player-lang/react-dsl/-/react-dsl-0.0.2-next.0.tgz}
+  '@player-lang/react-dsl@0.0.2-next.1':
+    resolution: {integrity: sha512-6LyI77q8cpVVlrmVt2pS1afDOS2ATo2U3vTQYAVP7Zwk+StgibmUMsVf37jXeE9wS3qA1yCM4ePdu13vOJ1XIA==, tarball: https://registry.npmjs.org/@player-lang/react-dsl/-/react-dsl-0.0.2-next.1.tgz}
     peerDependencies:
       '@types/react': ^18.3.3
       react: ^18.2.0
@@ -2224,24 +2224,25 @@ packages:
   '@vitest/utils@2.1.9':
     resolution: {integrity: sha512-v0psaMSkNJ3A2NMrUEHFRzJtDPFn+/VWZ5WxImB21T9fjucJRmS7xCS3ppEnARb9y11OAzaD+P2Ps+b+BGX5iQ==, tarball: https://registry.npmjs.org/@vitest/utils/-/utils-2.1.9.tgz}
 
-  '@xlr-lib/xlr-converters@0.1.1-next.1':
-    resolution: {integrity: sha512-uFxVj5J9atsz/vNW+Tw1IFoPKO7DFgj4PqqUz5734e5THFCBJ8ZPo4gw6cYNqhwOkVQ6HfKsVPeWF9zmoSt9PA==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-converters/-/xlr-converters-0.1.1-next.1.tgz}
+  '@xlr-lib/xlr-converters@0.1.1-next.4':
+    resolution: {integrity: sha512-D5Sag7X2dQbya/l4DBqr/lyUDmu7ADDtKQotRdA8KixZE7JMJoI9CW5itera0PAo3WvIA7lTPTN1CrEvlTCe1A==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-converters/-/xlr-converters-0.1.1-next.4.tgz}
+    hasBin: true
     peerDependencies:
       typescript: 5.5.4
 
-  '@xlr-lib/xlr-sdk@0.1.1-next.1':
-    resolution: {integrity: sha512-8RbAwyR9iVwcUpjmjfekCm1OCwQ/aYs+XxuwEE/d7M1o07Eb/bYUovEMRiAr9DhiRwR6VshbW2yMv/blyz94Ag==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-sdk/-/xlr-sdk-0.1.1-next.1.tgz}
+  '@xlr-lib/xlr-sdk@0.1.1-next.4':
+    resolution: {integrity: sha512-q46qn+7yzMJHT09+hHj0hej2t/p+IpIBT48BptlsKpEugENpFihrK4ITGJA6TO7QgtG58AKZsgTx95z8ebisyg==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-sdk/-/xlr-sdk-0.1.1-next.4.tgz}
     peerDependencies:
       typescript: 5.5.4
 
-  '@xlr-lib/xlr-utils@0.1.1-next.1':
-    resolution: {integrity: sha512-NqmvM/hpROJzYKPiXaSDO8D6W+Zcgp8CIL/7xE9WiRliGKzCZau9Zou80KIepkxgq6o1s5X4PDPxR1pGWNK5Pw==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-utils/-/xlr-utils-0.1.1-next.1.tgz}
+  '@xlr-lib/xlr-utils@0.1.1-next.4':
+    resolution: {integrity: sha512-BDCQnfHy1SVY0bB6BByshpsSihgJ7imqNV9uhuk2OD003uhawOFa5WH4HRjmWnvXXuWp/5asjB9ObIwkNh3m4g==, tarball: https://registry.npmjs.org/@xlr-lib/xlr-utils/-/xlr-utils-0.1.1-next.4.tgz}
     peerDependencies:
       jsonc-parser: 2.3.1
       typescript: 5.5.4
 
-  '@xlr-lib/xlr@0.1.1-next.1':
-    resolution: {integrity: sha512-AybUJPSW1Vdpq8FsXzAUnPvbTavzD2NYqiR+EDBqOEVchnDXrtiNG2vsjMmzooxaaa+/JYps8vlTbgG9n2Dflw==, tarball: https://registry.npmjs.org/@xlr-lib/xlr/-/xlr-0.1.1-next.1.tgz}
+  '@xlr-lib/xlr@0.1.1-next.4':
+    resolution: {integrity: sha512-FCi+Fc0KQHUbKO+OTUp291aFcC/t7pmjtMYM6lQdXB55Lu+EV47jE3PjHqxZuS3LSitGxonXMEOrprQDrqL9MQ==, tarball: https://registry.npmjs.org/@xlr-lib/xlr/-/xlr-0.1.1-next.4.tgz}
 
   '@yarnpkg/lockfile@1.1.0':
     resolution: {integrity: sha512-GpSwvyXOcOOlV70vbnzjj4fW5xW/FdUF6nQEt1ENy7m4ZCczi1+/buVUPAqmGfqznsORNFzUMjctTIp8a9tuCQ==, tarball: https://registry.npmjs.org/@yarnpkg/lockfile/-/lockfile-1.1.0.tgz}
@@ -7170,12 +7171,12 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
-  '@player-lang/json-language-service@0.0.2-next.0':
+  '@player-lang/json-language-service@0.0.2-next.1':
     dependencies:
       '@player-ui/player': 0.15.0
-      '@xlr-lib/xlr': 0.1.1-next.1
-      '@xlr-lib/xlr-sdk': 0.1.1-next.1(typescript@5.5.4)
-      '@xlr-lib/xlr-utils': 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
+      '@xlr-lib/xlr': 0.1.1-next.4
+      '@xlr-lib/xlr-sdk': 0.1.1-next.4(typescript@5.5.4)
+      '@xlr-lib/xlr-utils': 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
       detect-indent: 6.1.0
       jsonc-parser: 2.3.1
       tapable-ts: 0.2.4
@@ -7185,7 +7186,7 @@ snapshots:
       vscode-languageserver-textdocument: 1.0.12
       vscode-languageserver-types: 3.17.5
 
-  '@player-lang/react-dsl@0.0.2-next.0(@types/react@18.3.27)(react@18.3.1)':
+  '@player-lang/react-dsl@0.0.2-next.1(@types/react@18.3.27)(react@18.3.1)':
     dependencies:
       '@player-ui/player': 0.15.0
       '@player-ui/types': 0.15.0
@@ -7895,35 +7896,35 @@ snapshots:
       loupe: 3.2.1
       tinyrainbow: 1.2.0
 
-  '@xlr-lib/xlr-converters@0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)':
+  '@xlr-lib/xlr-converters@0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)':
     dependencies:
-      '@xlr-lib/xlr': 0.1.1-next.1
-      '@xlr-lib/xlr-utils': 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
+      '@xlr-lib/xlr': 0.1.1-next.4
+      '@xlr-lib/xlr-utils': 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
       tslib: 2.8.1
       typescript: 5.5.4
     transitivePeerDependencies:
       - jsonc-parser
 
-  '@xlr-lib/xlr-sdk@0.1.1-next.1(typescript@5.5.4)':
+  '@xlr-lib/xlr-sdk@0.1.1-next.4(typescript@5.5.4)':
     dependencies:
       '@types/fs-extra': 9.0.13
       '@types/node': 18.19.130
-      '@xlr-lib/xlr': 0.1.1-next.1
-      '@xlr-lib/xlr-converters': 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
-      '@xlr-lib/xlr-utils': 0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)
+      '@xlr-lib/xlr': 0.1.1-next.4
+      '@xlr-lib/xlr-converters': 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
+      '@xlr-lib/xlr-utils': 0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)
       fs-extra: 10.1.0
       jsonc-parser: 2.3.1
       tslib: 2.8.1
       typescript: 5.5.4
 
-  '@xlr-lib/xlr-utils@0.1.1-next.1(jsonc-parser@2.3.1)(typescript@5.5.4)':
+  '@xlr-lib/xlr-utils@0.1.1-next.4(jsonc-parser@2.3.1)(typescript@5.5.4)':
     dependencies:
-      '@xlr-lib/xlr': 0.1.1-next.1
+      '@xlr-lib/xlr': 0.1.1-next.4
       jsonc-parser: 2.3.1
       tslib: 2.8.1
       typescript: 5.5.4
 
-  '@xlr-lib/xlr@0.1.1-next.1':
+  '@xlr-lib/xlr@0.1.1-next.4':
     dependencies:
       tslib: 2.8.1
 
