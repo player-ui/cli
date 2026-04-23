@@ -3,7 +3,6 @@ import path from "path";
 import { cosmiconfig } from "cosmiconfig";
 import { PlayerLanguageService } from "@player-lang/json-language-service";
 import { DSLCompiler } from "@player-lang/react-dsl";
-import type { ExportTypes } from "@xlr-lib/xlr-sdk";
 import type { TransformFunction } from "@xlr-lib/xlr";
 import type {
   PlayerConfigFileShape,
@@ -177,7 +176,7 @@ export abstract class BaseCommand extends Command {
   }
 
   async getXLRTransforms(
-    format: ExportTypes,
+    format: "TypeScript",
   ): Promise<Array<TransformFunction>> {
     const transforms: Array<TransformFunction> = [];
     const { plugins } = await this.getPlayerConfig();

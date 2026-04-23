@@ -1,6 +1,5 @@
 import type { PlayerLanguageService } from "@player-lang/json-language-service";
 import type { DSLCompiler } from "@player-lang/react-dsl";
-import type { ExportTypes } from "@xlr-lib/xlr-sdk";
 import type { TransformFunction } from "@xlr-lib/xlr";
 import type { CompilationContext } from "../utils/compilation-context";
 
@@ -29,7 +28,7 @@ export interface PlayerCLIPlugin {
    * Append the transforms to apply to the passed in array based on the provided format
    */
   onConvertXLR?: (
-    format: ExportTypes,
+    format: "TypeScript",
     transforms: Array<TransformFunction>,
   ) => void | Promise<void>;
 
