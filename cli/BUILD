@@ -20,12 +20,6 @@ build_deps = [
 ]
 
 deps = [
-    "//:node_modules/@player-lang/react-dsl",
-    "//:node_modules/@player-lang/json-language-service",
-    "//:node_modules/@xlr-lib/xlr",
-    "//:node_modules/@xlr-lib/xlr-converters",
-    "//:node_modules/@xlr-lib/xlr-sdk",
-    "//:node_modules/@xlr-lib/xlr-utils",
     "//:node_modules/@babel/plugin-transform-react-jsx-source",
     "//:node_modules/@babel/preset-env",
     "//:node_modules/@babel/preset-react",
@@ -54,9 +48,19 @@ deps = [
     "//:node_modules/vscode-languageserver-types",
 ]
 
+peer_deps = [
+    "//:node_modules/@player-lang/react-dsl",
+    "//:node_modules/@player-lang/json-language-service",
+    "//:node_modules/@xlr-lib/xlr",
+    "//:node_modules/@xlr-lib/xlr-converters",
+    "//:node_modules/@xlr-lib/xlr-sdk",
+    "//:node_modules/@xlr-lib/xlr-utils",
+]
+
 oclif_pipeline(
     package_name = "@player-cli/cli",
     build_deps = build_deps,
     deps = deps,
+    peer_deps = peer_deps,
     manifest = False
 )

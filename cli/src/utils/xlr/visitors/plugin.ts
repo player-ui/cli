@@ -1,5 +1,3 @@
-import type { TopLevelNode } from "@xlr-lib/xlr-utils";
-import { isNodeExported, isTopLevelNode } from "@xlr-lib/xlr-utils";
 import path from "path";
 import ts from "typescript";
 import fs from "fs";
@@ -7,6 +5,28 @@ import type { Manifest, NamedType, RefNode } from "@xlr-lib/xlr";
 import type { TsConverter } from "@xlr-lib/xlr-converters";
 import type { VisitorProps } from "./types";
 import { PLAYER_PLUGIN_INTERFACE_NAME } from "../consts";
+
+type TopLevelNode =
+  | ts.InterfaceDeclaration
+  | ts.TypeAliasDeclaration
+  | ts.VariableStatement;
+
+function isTopLevelNode(node: ts.Node): node is TopLevelNode {
+  return (
+    ts.isInterfaceDeclaration(node) ||
+    ts.isTypeAliasDeclaration(node) ||
+    ts.isVariableStatement(node)
+  );
+}
+
+function isNodeExported(node: ts.Node): boolean {
+  return (
+    (ts.getCombinedModifierFlags(node as ts.Declaration) &
+      ts.ModifierFlags.Export) !==
+      0 ||
+    (!!node.parent && node.parent.kind === ts.SyntaxKind.SourceFile)
+  );
+}
 
 /**
  * Follows references to get the actual underlying declaration

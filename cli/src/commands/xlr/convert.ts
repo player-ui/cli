@@ -2,15 +2,24 @@ import { Flags } from "@oclif/core";
 import path from "path";
 import fs from "fs";
 import chalk from "chalk";
-import type { ExportTypes } from "@xlr-lib/xlr-sdk";
 import { XLRSDK } from "@xlr-lib/xlr-sdk";
+import { exportTypesToTypeScript } from "@xlr-lib/xlr-converters";
 import logSymbols from "log-symbols";
 import { BaseCommand } from "../../utils/base-command";
 
 const PlayerImportMap = new Map([
   [
     "@player-ui/types",
-    ["Expression", "Asset", "Binding", "AssetWrapper", "Schema.DataType"],
+    [
+      "Expression",
+      "Asset",
+      "Binding",
+      "AssetWrapper",
+      "Schema.DataType",
+      "ExpressionHandler",
+      "FormatType",
+      "ValidatorFunction",
+    ],
   ],
 ]);
 
@@ -48,7 +57,7 @@ export default class XLRConvert extends BaseCommand {
       throw new Error(`Need to specify location to export to`);
     }
 
-    const language = flags.lang as ExportTypes;
+    const language = flags.lang as "TypeScript";
 
     if (!language) {
       throw new Error(`Need to specifiy lanauge to export to`);
@@ -65,7 +74,7 @@ export default class XLRConvert extends BaseCommand {
     /** the status code */
     exitCode: number;
   }> {
-    const { inputPath, outputDir, language } = await this.getOptions();
+    const { inputPath, outputDir } = await this.getOptions();
     try {
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
@@ -73,10 +82,9 @@ export default class XLRConvert extends BaseCommand {
 
       const sdk = new XLRSDK();
       sdk.loadDefinitionsFromDisk(inputPath);
-      const files = sdk.exportRegistry(language, PlayerImportMap);
-      files.forEach(([filename, fileContents]) => {
-        fs.writeFileSync(path.join(outputDir, filename), fileContents, {});
-      });
+      const types = sdk.listTypes();
+      const fileContents = exportTypesToTypeScript(types, PlayerImportMap);
+      fs.writeFileSync(path.join(outputDir, "out.d.ts"), fileContents, {});
     } catch (e: any) {
       console.log("");
       console.log(
