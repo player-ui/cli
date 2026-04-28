@@ -1,3 +1,23 @@
+# 0.1.1-next.3 (Tue Apr 28 2026)
+
+### Release Notes
+
+#### 1.0 Release Prep ([#9](https://github.com/player-ui/cli/pull/9))
+
+Use new major versions for xlr and language libraries and fix breaking changes associated with them
+
+---
+
+#### 💥 Breaking Change
+
+- 1.0 Release Prep [#9](https://github.com/player-ui/cli/pull/9) ([@KetanReddy](https://github.com/KetanReddy))
+
+#### Authors: 1
+
+- Ketan Reddy ([@KetanReddy](https://github.com/KetanReddy))
+
+---
+
 # 0.1.1-next.2 (Tue Apr 14 2026)
 
 ### Release Notes
