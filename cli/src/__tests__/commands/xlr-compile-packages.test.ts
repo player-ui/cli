@@ -1,7 +1,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { test, expect, describe, beforeEach, afterEach } from "vitest";
+import { test, expect, describe, beforeEach, afterEach, vi } from "vitest";
 import XLRCompile from "../../commands/xlr/compile";
 
 /** A plugin package with one asset, laid out the way `xlr compile` expects */
@@ -32,6 +32,13 @@ export class TestPlugin implements ExtendedPlayerPlugin<[TestAsset]> {
   );
 }
 
+/** Silences `this.warn` while capturing what it was called with */
+function spyOnWarn() {
+  return vi
+    .spyOn(XLRCompile.prototype, "warn")
+    .mockImplementation((input) => input);
+}
+
 function readManifest(dir: string) {
   return JSON.parse(
     fs.readFileSync(path.join(dir, "dist", "xlr", "manifest.json"), "utf-8"),
@@ -42,6 +49,7 @@ describe("xlr compile package info", () => {
   /** An isolated root, so nothing on the ambient filesystem can be picked up */
   let workspace: string;
   let cwd: string;
+  let warn: ReturnType<typeof spyOnWarn>;
   const env = { ...process.env };
 
   beforeEach(() => {
@@ -49,14 +57,17 @@ describe("xlr compile package info", () => {
       fs.mkdtempSync(path.join(os.tmpdir(), "xlr-compile-")),
     );
     cwd = process.cwd();
+    warn = spyOnWarn();
     delete process.env.BAZEL_STABLE_STATUS_FILE;
     delete process.env.BAZEL_PACKAGE;
+    delete process.env.XLR_PACKAGE_NAME;
   });
 
   afterEach(() => {
     process.chdir(cwd);
     fs.rmSync(workspace, { recursive: true, force: true });
     process.env = { ...env };
+    warn.mockRestore();
   });
 
   describe("non-bazel", () => {
@@ -71,6 +82,16 @@ describe("xlr compile package info", () => {
 
       expect(readManifest(workspace).packages).toStrictEqual({
         react: { name: "@test/plugin", version: "2.3.4" },
+      });
+    });
+
+    test("records the name alone when package.json has no version", async () => {
+      writeFixture(workspace, { name: "@test/plugin" });
+
+      await XLRCompile.run(["-i", "src", "-o", "dist"]);
+
+      expect(readManifest(workspace).packages).toStrictEqual({
+        react: { name: "@test/plugin" },
       });
     });
 
@@ -91,21 +112,29 @@ describe("xlr compile package info", () => {
       });
     });
 
+    // The omission must be noisy: a manifest silently losing its `packages` key is the
+    // failure mode this whole path exists to prevent.
     describe("when package.json is missing or incomplete", () => {
-      test("omits packages when there is no package.json", async () => {
+      test("omits packages and warns when there is no package.json", async () => {
         writeFixture(workspace);
 
         await XLRCompile.run(["-i", "src", "-o", "dist"]);
 
         expect(readManifest(workspace).packages).toBeUndefined();
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining("No readable package.json"),
+        );
       });
 
-      test("omits packages when package.json has no name", async () => {
+      test("omits packages and warns when package.json has no name", async () => {
         writeFixture(workspace, { version: "2.3.4" });
 
         await XLRCompile.run(["-i", "src", "-o", "dist"]);
 
         expect(readManifest(workspace).packages).toBeUndefined();
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining('No "name" in'),
+        );
       });
     });
   });
@@ -125,11 +154,10 @@ describe("xlr compile package info", () => {
       process.env.BAZEL_PACKAGE = pkgPath;
     });
 
-    test("reads the name from package.json and the version from the stamped status file", async () => {
-      writeFixture(path.join(workspace, pkgPath), {
-        name: "@test/plugin",
-        version: "0.0.0-PLACEHOLDER",
-      });
+    test("takes the name from XLR_PACKAGE_NAME and the version from the stamp", async () => {
+      // No package.json in the package: Bazel does not stage one, it passes the name instead
+      writeFixture(path.join(workspace, pkgPath));
+      process.env.XLR_PACKAGE_NAME = "@test/plugin";
       const statusFile = path.join(workspace, "stable-status.txt");
       fs.writeFileSync(statusFile, "STABLE_VERSION 1.1.0\n");
       process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
@@ -148,11 +176,9 @@ describe("xlr compile package info", () => {
       });
     });
 
-    test("omits the version rather than emitting the placeholder, when not stamped", async () => {
-      writeFixture(path.join(workspace, pkgPath), {
-        name: "@test/plugin",
-        version: "0.0.0-PLACEHOLDER",
-      });
+    test("omits the version when not stamped", async () => {
+      writeFixture(path.join(workspace, pkgPath));
+      process.env.XLR_PACKAGE_NAME = "@test/plugin";
 
       await XLRCompile.run([
         "-i",
@@ -169,7 +195,7 @@ describe("xlr compile package info", () => {
     });
 
     describe("when package.json is missing or incomplete", () => {
-      test("omits packages when there is no package.json at BAZEL_PACKAGE", async () => {
+      test("omits packages and warns when neither XLR_PACKAGE_NAME nor package.json is available", async () => {
         writeFixture(path.join(workspace, pkgPath));
 
         await XLRCompile.run([
@@ -182,6 +208,9 @@ describe("xlr compile package info", () => {
         expect(
           readManifest(path.join(workspace, pkgPath)).packages,
         ).toBeUndefined();
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining(path.join(pkgPath, "package.json")),
+        );
       });
 
       test("omits packages when package.json has no name", async () => {

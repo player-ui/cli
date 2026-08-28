@@ -5,7 +5,7 @@ import path from "path";
 import globby from "globby";
 import logSymbols from "log-symbols";
 import { TsConverter } from "@xlr-lib/xlr-converters";
-import type { Manifest, PlatformPackage } from "@xlr-lib/xlr";
+import type { Manifest, PlatformPackages } from "@xlr-lib/xlr";
 import chalk from "chalk";
 import { BaseCommand } from "../../utils/base-command";
 import { pluginVisitor, fileVisitor } from "../../utils/xlr/visitors";
@@ -85,41 +85,77 @@ export default class XLRCompile extends BaseCommand {
   }
 
   /**
-   * The npm package that provides the capabilities being compiled, read from the
-   * `package.json` of the package the command was invoked for.
+   * The npm package that provides the capabilities being compiled.
+   *
+   * Bazel supplies the name through `XLR_PACKAGE_NAME`, since it only knows the package path
+   * and the npm name cannot be derived from it. Otherwise the package's own `package.json` is
+   * the source.
    */
-  private getReactPackage(): PlatformPackage | undefined {
+  private getPackages(): PlatformPackages | undefined {
+    const name = process.env.XLR_PACKAGE_NAME || this.readPackageJsonName();
+
+    if (!name) {
+      return undefined;
+    }
+
+    const version = this.getVersion();
+
+    // TODO: only `react` is generated, because XLR is compiled from TypeScript and there is no
+    // equivalent for iOS or Android. Native configurations will be added later.
+    return {
+      react: { name, ...(version ? { version } : {}) },
+    };
+  }
+
+  /** The npm name in the `package.json` of the package being compiled */
+  private readPackageJsonName(): string | undefined {
     const packageJsonPath = path.join(this.getPackageDir(), "package.json");
 
     let name: unknown;
-    let version: unknown;
 
     try {
-      ({ name, version } = JSON.parse(
-        fs.readFileSync(packageJsonPath, "utf-8"),
-      ));
+      ({ name } = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8")));
     } catch {
-      this.debug("no readable package.json at %s", packageJsonPath);
+      this.warn(
+        `No readable package.json at ${packageJsonPath}. Omitting package information from the manifest.`,
+      );
       return undefined;
     }
 
     if (typeof name !== "string" || !name) {
+      this.warn(
+        `No "name" in ${packageJsonPath}. Omitting package information from the manifest.`,
+      );
       return undefined;
     }
 
-    // Under Bazel the version in package.json is a placeholder that is only substituted at
-    // publish time, so the stamped value is the only one worth recording. Elsewhere the
-    // package manager keeps package.json current and it can be read directly.
-    const resolvedVersion = process.env.BAZEL_PACKAGE
-      ? this.getStampedVersion()
-      : version;
+    return name;
+  }
 
-    return {
-      name,
-      ...(typeof resolvedVersion === "string" && resolvedVersion
-        ? { version: resolvedVersion }
-        : {}),
-    };
+  /**
+   * The version to record for the package being compiled.
+   *
+   * Under Bazel the version in `package.json` is a placeholder that is only substituted at
+   * publish time, so the stamped value is the only real source. Elsewhere the package
+   * manager keeps `package.json` current and it can be read directly.
+   */
+  private getVersion(): string | undefined {
+    if (process.env.BAZEL_PACKAGE) {
+      return this.getStampedVersion();
+    }
+
+    try {
+      const { version } = JSON.parse(
+        fs.readFileSync(
+          path.join(this.getPackageDir(), "package.json"),
+          "utf-8",
+        ),
+      );
+
+      return typeof version === "string" && version ? version : undefined;
+    } catch {
+      return undefined;
+    }
   }
 
   async run(): Promise<{
@@ -131,9 +167,9 @@ export default class XLRCompile extends BaseCommand {
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
-    const reactPackage = this.getReactPackage();
+    const packages = this.getPackages();
     try {
-      this.processTypes(inputFiles, outputDir, {}, mode, reactPackage);
+      this.processTypes(inputFiles, outputDir, {}, mode, packages);
     } catch (e: any) {
       console.log("");
       console.log(
@@ -161,7 +197,7 @@ export default class XLRCompile extends BaseCommand {
     outputDirectory: string,
     options: ts.CompilerOptions,
     mode: Mode = Mode.PLUGIN,
-    reactPackage?: PlatformPackage,
+    packages?: PlatformPackages,
   ): void {
     // Build a program using the set of root file names in fileNames
     const program = ts.createProgram(fileNames, options);
@@ -222,7 +258,7 @@ export default class XLRCompile extends BaseCommand {
 
     const manifest: Manifest = {
       ...capabilities,
-      ...(reactPackage ? { packages: { react: reactPackage } } : {}),
+      ...(packages ? { packages } : {}),
     };
 
     // print out the manifest files
