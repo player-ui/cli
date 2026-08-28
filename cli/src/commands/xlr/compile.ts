@@ -5,7 +5,7 @@ import path from "path";
 import globby from "globby";
 import logSymbols from "log-symbols";
 import { TsConverter } from "@xlr-lib/xlr-converters";
-import type { Manifest } from "@xlr-lib/xlr";
+import type { Manifest, PlatformPackage } from "@xlr-lib/xlr";
 import chalk from "chalk";
 import { BaseCommand } from "../../utils/base-command";
 import { pluginVisitor, fileVisitor } from "../../utils/xlr/visitors";
@@ -52,6 +52,76 @@ export default class XLRCompile extends BaseCommand {
     };
   }
 
+  /**
+   * Get the version Bazel stamped this build with.
+   */
+  private getStampedVersion(): string | undefined {
+    const statusFile = process.env.BAZEL_STABLE_STATUS_FILE;
+
+    if (!statusFile || !fs.existsSync(statusFile)) {
+      return undefined;
+    }
+
+    const line = fs
+      .readFileSync(statusFile, "utf-8")
+      .split("\n")
+      .find((l) => l.startsWith("STABLE_VERSION "));
+
+    return line?.slice("STABLE_VERSION ".length).trim() || undefined;
+  }
+
+  /**
+   * The directory of the package being compiled.
+   *
+   * Non-Bazel: the working directory is the package.
+   * Bazel: runs from the workspace root, so `BAZEL_PACKAGE` is joined onto it.
+   */
+  private getPackageDir(): string {
+    const bazelPackage = process.env.BAZEL_PACKAGE;
+
+    return bazelPackage
+      ? path.resolve(process.cwd(), bazelPackage)
+      : process.cwd();
+  }
+
+  /**
+   * The npm package that provides the capabilities being compiled, read from the
+   * `package.json` of the package the command was invoked for.
+   */
+  private getReactPackage(): PlatformPackage | undefined {
+    const packageJsonPath = path.join(this.getPackageDir(), "package.json");
+
+    let name: unknown;
+    let version: unknown;
+
+    try {
+      ({ name, version } = JSON.parse(
+        fs.readFileSync(packageJsonPath, "utf-8"),
+      ));
+    } catch {
+      this.debug("no readable package.json at %s", packageJsonPath);
+      return undefined;
+    }
+
+    if (typeof name !== "string" || !name) {
+      return undefined;
+    }
+
+    // Under Bazel the version in package.json is a placeholder that is only substituted at
+    // publish time, so the stamped value is the only one worth recording. Elsewhere the
+    // package manager keeps package.json current and it can be read directly.
+    const resolvedVersion = process.env.BAZEL_PACKAGE
+      ? this.getStampedVersion()
+      : version;
+
+    return {
+      name,
+      ...(typeof resolvedVersion === "string" && resolvedVersion
+        ? { version: resolvedVersion }
+        : {}),
+    };
+  }
+
   async run(): Promise<{
     /** the status code */
     exitCode: number;
@@ -61,8 +131,9 @@ export default class XLRCompile extends BaseCommand {
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
+    const reactPackage = this.getReactPackage();
     try {
-      this.processTypes(inputFiles, outputDir, {}, mode);
+      this.processTypes(inputFiles, outputDir, {}, mode, reactPackage);
     } catch (e: any) {
       console.log("");
       console.log(
@@ -90,6 +161,7 @@ export default class XLRCompile extends BaseCommand {
     outputDirectory: string,
     options: ts.CompilerOptions,
     mode: Mode = Mode.PLUGIN,
+    reactPackage?: PlatformPackage,
   ): void {
     // Build a program using the set of root file names in fileNames
     const program = ts.createProgram(fileNames, options);
@@ -148,11 +220,16 @@ export default class XLRCompile extends BaseCommand {
       throw new Error("Error: Unable to parse any XLRs in package");
     }
 
+    const manifest: Manifest = {
+      ...capabilities,
+      ...(reactPackage ? { packages: { react: reactPackage } } : {}),
+    };
+
     // print out the manifest files
-    const jsonManifest = JSON.stringify(capabilities, this.replacer, 4);
+    const jsonManifest = JSON.stringify(manifest, this.replacer, 4);
     fs.writeFileSync(path.join(outputDirectory, "manifest.json"), jsonManifest);
 
-    const tsManifestFile = `${[...(capabilities.capabilities?.values() ?? [])]
+    const tsManifestFile = `${[...(manifest.capabilities?.values() ?? [])]
       .flat(2)
       .map((capability) => {
         return `const ${capability.replace(".", "_")} = require("./${capability}.json")`;
@@ -160,16 +237,20 @@ export default class XLRCompile extends BaseCommand {
       .join("\n")}
 
     module.exports = {
-      "pluginName": "${capabilities.pluginName}",
+      "pluginName": "${manifest.pluginName}",${
+        manifest.packages
+          ? `\n      "packages": ${JSON.stringify(manifest.packages)},`
+          : ""
+      }
       "capabilities": {
-        ${[...(capabilities.capabilities?.entries() ?? [])]
+        ${[...(manifest.capabilities?.entries() ?? [])]
           .map(([capabilityName, provides]) => {
             return `"${capabilityName}":[${provides.join(",").replaceAll(".", "_")}],`;
           })
           .join("\n\t\t")}
       },
       "customPrimitives": [
-        ${[capabilities.customPrimitives?.map((i) => `"${i}"`).join(",") ?? ""]}
+        ${[manifest.customPrimitives?.map((i) => `"${i}"`).join(",") ?? ""]}
       ]
     }
 `;
