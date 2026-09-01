@@ -10,6 +10,7 @@ import chalk from "chalk";
 import { BaseCommand } from "../../utils/base-command";
 import { pluginVisitor, fileVisitor } from "../../utils/xlr/visitors";
 import { Mode, customPrimitives } from "../../utils/xlr/consts";
+import { getPackages } from "../../utils/xlr/packages";
 
 /**
  * Exports TS Interfaces/Types to XLR format
@@ -52,112 +53,6 @@ export default class XLRCompile extends BaseCommand {
     };
   }
 
-  /**
-   * Get the version Bazel stamped this build with.
-   */
-  private getStampedVersion(): string | undefined {
-    const statusFile = process.env.BAZEL_STABLE_STATUS_FILE;
-
-    if (!statusFile || !fs.existsSync(statusFile)) {
-      return undefined;
-    }
-
-    const line = fs
-      .readFileSync(statusFile, "utf-8")
-      .split("\n")
-      .find((l) => l.startsWith("STABLE_VERSION "));
-
-    return line?.slice("STABLE_VERSION ".length).trim() || undefined;
-  }
-
-  /**
-   * The directory of the package being compiled.
-   *
-   * Non-Bazel: the working directory is the package.
-   * Bazel: runs from the workspace root, so `BAZEL_PACKAGE` is joined onto it.
-   */
-  private getPackageDir(): string {
-    const bazelPackage = process.env.BAZEL_PACKAGE;
-
-    return bazelPackage
-      ? path.resolve(process.cwd(), bazelPackage)
-      : process.cwd();
-  }
-
-  /**
-   * The npm package that provides the capabilities being compiled.
-   *
-   * Bazel supplies the name through `XLR_PACKAGE_NAME`, since it only knows the package path
-   * and the npm name cannot be derived from it. Otherwise the package's own `package.json` is
-   * the source.
-   */
-  private getPackages(): PlatformPackages | undefined {
-    const name = process.env.XLR_PACKAGE_NAME || this.readPackageJsonName();
-
-    if (!name) {
-      return undefined;
-    }
-
-    const version = this.getVersion();
-
-    // TODO: only `react` is generated, because XLR is compiled from TypeScript and there is no
-    // equivalent for iOS or Android. Native configurations will be added later.
-    return {
-      react: { name, ...(version ? { version } : {}) },
-    };
-  }
-
-  /** The npm name in the `package.json` of the package being compiled */
-  private readPackageJsonName(): string | undefined {
-    const packageJsonPath = path.join(this.getPackageDir(), "package.json");
-
-    let name: unknown;
-
-    try {
-      ({ name } = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8")));
-    } catch {
-      this.warn(
-        `No readable package.json at ${packageJsonPath}. Omitting package information from the manifest.`,
-      );
-      return undefined;
-    }
-
-    if (typeof name !== "string" || !name) {
-      this.warn(
-        `No "name" in ${packageJsonPath}. Omitting package information from the manifest.`,
-      );
-      return undefined;
-    }
-
-    return name;
-  }
-
-  /**
-   * The version to record for the package being compiled.
-   *
-   * Under Bazel the version in `package.json` is a placeholder that is only substituted at
-   * publish time, so the stamped value is the only real source. Elsewhere the package
-   * manager keeps `package.json` current and it can be read directly.
-   */
-  private getVersion(): string | undefined {
-    if (process.env.BAZEL_PACKAGE) {
-      return this.getStampedVersion();
-    }
-
-    try {
-      const { version } = JSON.parse(
-        fs.readFileSync(
-          path.join(this.getPackageDir(), "package.json"),
-          "utf-8",
-        ),
-      );
-
-      return typeof version === "string" && version ? version : undefined;
-    } catch {
-      return undefined;
-    }
-  }
-
   async run(): Promise<{
     /** the status code */
     exitCode: number;
@@ -167,7 +62,7 @@ export default class XLRCompile extends BaseCommand {
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
-    const packages = this.getPackages();
+    const packages = getPackages((message) => this.warn(message));
     try {
       this.processTypes(inputFiles, outputDir, {}, mode, packages);
     } catch (e: any) {
