@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { Errors } from "@oclif/core";
 import type { PlatformPackages } from "@xlr-lib/xlr";
 
 /**
@@ -14,8 +15,6 @@ import type { PlatformPackages } from "@xlr-lib/xlr";
  * placeholder that is substituted at publish time, so the stamp is the only real source.
  * Elsewhere the package manager keeps `package.json` current and it is read directly.
  */
-
-export type WarnFn = (message: string) => void;
 
 /**
  * The directory of the package being compiled.
@@ -35,36 +34,34 @@ function getPackageDir(): string {
 function getPackageJson(
   packageDir: string,
 ): Record<string, unknown> | undefined {
+  const packageJsonPath = path.join(packageDir, "package.json");
+
   try {
-    return JSON.parse(
-      fs.readFileSync(path.join(packageDir, "package.json"), "utf-8"),
+    return JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+  } catch (error) {
+    Errors.warn(
+      `Could not read ${packageJsonPath}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
     );
-  } catch {
     return undefined;
   }
 }
 
-/** The `name` of a `package.json`, warning about whatever made it unavailable */
+/** The `name` of a `package.json`, warning if there isn't one */
 function getPackageJsonName(
   packageDir: string,
   packageJson: Record<string, unknown> | undefined,
-  warn: WarnFn,
 ): string | undefined {
-  const packageJsonPath = path.join(packageDir, "package.json");
-
   if (!packageJson) {
-    warn(
-      `No readable package.json at ${packageJsonPath}. Omitting package information from the manifest.`,
-    );
+    // getPackageJson already warned about why it is unavailable
     return undefined;
   }
 
   const { name } = packageJson;
 
   if (typeof name !== "string" || !name) {
-    warn(
-      `No "name" in ${packageJsonPath}. Omitting package information from the manifest.`,
-    );
+    Errors.warn(`No "name" in ${path.join(packageDir, "package.json")}.`);
     return undefined;
   }
 
@@ -110,16 +107,16 @@ function getStampedVersion(): string | undefined {
  * The npm package that provides the capabilities being compiled, or undefined if its name
  * cannot be determined.
  */
-export function getPackages(warn: WarnFn): PlatformPackages | undefined {
+export function getPackages(): PlatformPackages | undefined {
   const packageDir = getPackageDir();
   const packageJson = getPackageJson(packageDir);
 
   // Bazel only knows the package path, so it passes the npm name through the environment.
   const name =
-    process.env.XLR_PACKAGE_NAME ||
-    getPackageJsonName(packageDir, packageJson, warn);
+    process.env.XLR_PACKAGE_NAME || getPackageJsonName(packageDir, packageJson);
 
   if (!name) {
+    Errors.warn("Omitting package information from the manifest.");
     return undefined;
   }
 

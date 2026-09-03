@@ -62,7 +62,7 @@ export default class XLRCompile extends BaseCommand {
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
-    const packages = getPackages((message) => this.warn(message));
+    const packages = getPackages();
     try {
       this.processTypes(inputFiles, outputDir, {}, mode, packages);
     } catch (e: any) {
