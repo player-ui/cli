@@ -2,6 +2,7 @@ import fs from "fs";
 import os from "os";
 import path from "path";
 import { test, expect, describe, beforeEach, afterEach, vi } from "vitest";
+import { Errors } from "@oclif/core";
 import XLRCompile from "../../commands/xlr/compile";
 
 /** A plugin package with one asset, laid out the way `xlr compile` expects */
@@ -32,11 +33,9 @@ export class TestPlugin implements ExtendedPlayerPlugin<[TestAsset]> {
   );
 }
 
-/** Silences `this.warn` while capturing what it was called with */
+/** Silences `Errors.warn` while capturing what it was called with */
 function spyOnWarn() {
-  return vi
-    .spyOn(XLRCompile.prototype, "warn")
-    .mockImplementation((input) => input);
+  return vi.spyOn(Errors, "warn").mockImplementation(() => undefined);
 }
 
 function readManifest(dir: string) {
@@ -106,7 +105,10 @@ describe("xlr compile package info", () => {
 
         expect(readManifest(workspace).packages).toBeUndefined();
         expect(warn).toHaveBeenCalledWith(
-          expect.stringContaining("No readable package.json"),
+          expect.stringContaining("Could not read"),
+        );
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining("Omitting package information"),
         );
       });
 
