@@ -61,6 +61,7 @@ describe("xlr compile package info", () => {
     delete process.env.BAZEL_STABLE_STATUS_FILE;
     delete process.env.BAZEL_PACKAGE;
     delete process.env.XLR_PACKAGE_NAME;
+    delete process.env.JS_BINARY__EXECROOT;
   });
 
   afterEach(() => {
@@ -92,23 +93,6 @@ describe("xlr compile package info", () => {
 
       expect(readManifest(workspace).packages).toStrictEqual({
         react: { name: "@test/plugin" },
-      });
-    });
-
-    test("ignores a stamped version when not run under Bazel", async () => {
-      // package.json is authoritative here, so a stray status file must not override it
-      writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
-      const statusFile = path.join(workspace, "stable-status.txt");
-      fs.writeFileSync(
-        statusFile,
-        "STABLE_GIT_COMMIT abc123\nSTABLE_VERSION 9.9.9\n",
-      );
-      process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
-
-      await XLRCompile.run(["-i", "src", "-o", "dist"]);
-
-      expect(readManifest(workspace).packages).toStrictEqual({
-        react: { name: "@test/plugin", version: "2.3.4" },
       });
     });
 
@@ -173,6 +157,37 @@ describe("xlr compile package info", () => {
         readManifest(path.join(workspace, pkgPath)).packages,
       ).toStrictEqual({
         react: { name: "@test/plugin", version: "1.1.0" },
+      });
+    });
+
+    test("resolves an execroot-relative stamp path against the execroot", async () => {
+      // Bazel names the status file relative to the execroot, but the js_binary launcher
+      // runs the tool from BAZEL_BINDIR, so a relative path does not resolve against cwd.
+      writeFixture(path.join(workspace, pkgPath));
+      process.env.XLR_PACKAGE_NAME = "@test/plugin";
+      fs.mkdirSync(path.join(workspace, "bazel-out"), { recursive: true });
+      fs.writeFileSync(
+        path.join(workspace, "bazel-out", "stable-status.txt"),
+        "STABLE_VERSION 1.2.0-next.7\n",
+      );
+      process.env.BAZEL_STABLE_STATUS_FILE = "bazel-out/stable-status.txt";
+      process.env.JS_BINARY__EXECROOT = workspace;
+
+      const bindir = path.join(workspace, "bazel-out", "bin");
+      fs.mkdirSync(bindir, { recursive: true });
+      process.chdir(bindir);
+
+      await XLRCompile.run([
+        "-i",
+        path.join(workspace, pkgPath, "src"),
+        "-o",
+        path.join(workspace, pkgPath, "dist"),
+      ]);
+
+      expect(
+        readManifest(path.join(workspace, pkgPath)).packages,
+      ).toStrictEqual({
+        react: { name: "@test/plugin", version: "1.2.0-next.7" },
       });
     });
 

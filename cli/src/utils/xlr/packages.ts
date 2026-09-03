@@ -7,7 +7,7 @@ import type { PlatformPackages } from "@xlr-lib/xlr";
  *
  * | | name | version |
  * | --- | --- | --- |
- * | Bazel (`BAZEL_PACKAGE` is set) | `XLR_PACKAGE_NAME`, else the package's `package.json` | the `STABLE_VERSION` stamp |
+ * | Bazel (stamped) | `XLR_PACKAGE_NAME`, else the package's `package.json` | the `STABLE_VERSION` stamp |
  * | anywhere else | `XLR_PACKAGE_NAME`, else the package's `package.json` | the package's `package.json` |
  *
  * Only the version differs between the two: under Bazel the version in `package.json` is a
@@ -16,11 +16,6 @@ import type { PlatformPackages } from "@xlr-lib/xlr";
  */
 
 export type WarnFn = (message: string) => void;
-
-/** Whether this compile is running as a Bazel action */
-function isBazel(): boolean {
-  return Boolean(process.env.BAZEL_PACKAGE);
-}
 
 /**
  * The directory of the package being compiled.
@@ -89,12 +84,22 @@ function getPackageJsonVersion(
 function getStampedVersion(): string | undefined {
   const statusFile = process.env.BAZEL_STABLE_STATUS_FILE;
 
-  if (!statusFile || !fs.existsSync(statusFile)) {
+  if (!statusFile) {
+    return undefined;
+  }
+
+  // Bazel names the status file relative to the execroot (`File.path`), but the js_binary
+  // launcher changes directory out of the execroot into BAZEL_BINDIR before running the
+  // tool, so re-anchor the path before reading it.
+  const execroot = process.env.JS_BINARY__EXECROOT;
+  const resolved = execroot ? path.join(execroot, statusFile) : statusFile;
+
+  if (!fs.existsSync(resolved)) {
     return undefined;
   }
 
   const line = fs
-    .readFileSync(statusFile, "utf-8")
+    .readFileSync(resolved, "utf-8")
     .split("\n")
     .find((l) => l.startsWith("STABLE_VERSION "));
 
@@ -118,9 +123,8 @@ export function getPackages(warn: WarnFn): PlatformPackages | undefined {
     return undefined;
   }
 
-  const version = isBazel()
-    ? getStampedVersion()
-    : getPackageJsonVersion(packageJson);
+  // Only a stamped Bazel build produces a status file; otherwise `package.json` is the source.
+  const version = getStampedVersion() ?? getPackageJsonVersion(packageJson);
 
   // TODO: only `react` is generated, because XLR is compiled from TypeScript and there is no
   // equivalent for iOS or Android. Native configurations will be added later.
