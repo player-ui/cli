@@ -5,11 +5,12 @@ import path from "path";
 import globby from "globby";
 import logSymbols from "log-symbols";
 import { TsConverter } from "@xlr-lib/xlr-converters";
-import type { Manifest } from "@xlr-lib/xlr";
+import type { Manifest, PlatformPackages } from "@xlr-lib/xlr";
 import chalk from "chalk";
 import { BaseCommand } from "../../utils/base-command";
 import { pluginVisitor, fileVisitor } from "../../utils/xlr/visitors";
 import { Mode, customPrimitives } from "../../utils/xlr/consts";
+import { getPackages } from "../../utils/xlr/packages";
 
 /**
  * Exports TS Interfaces/Types to XLR format
@@ -61,8 +62,9 @@ export default class XLRCompile extends BaseCommand {
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
+    const packages = getPackages();
     try {
-      this.processTypes(inputFiles, outputDir, {}, mode);
+      this.processTypes(inputFiles, outputDir, {}, mode, packages);
     } catch (e: any) {
       console.log("");
       console.log(
@@ -90,6 +92,7 @@ export default class XLRCompile extends BaseCommand {
     outputDirectory: string,
     options: ts.CompilerOptions,
     mode: Mode = Mode.PLUGIN,
+    packages?: PlatformPackages,
   ): void {
     // Build a program using the set of root file names in fileNames
     const program = ts.createProgram(fileNames, options);
@@ -148,11 +151,16 @@ export default class XLRCompile extends BaseCommand {
       throw new Error("Error: Unable to parse any XLRs in package");
     }
 
+    const manifest: Manifest = {
+      ...capabilities,
+      ...(packages ? { packages } : {}),
+    };
+
     // print out the manifest files
-    const jsonManifest = JSON.stringify(capabilities, this.replacer, 4);
+    const jsonManifest = JSON.stringify(manifest, this.replacer, 4);
     fs.writeFileSync(path.join(outputDirectory, "manifest.json"), jsonManifest);
 
-    const tsManifestFile = `${[...(capabilities.capabilities?.values() ?? [])]
+    const tsManifestFile = `${[...(manifest.capabilities?.values() ?? [])]
       .flat(2)
       .map((capability) => {
         return `const ${capability.replace(".", "_")} = require("./${capability}.json")`;
@@ -160,16 +168,20 @@ export default class XLRCompile extends BaseCommand {
       .join("\n")}
 
     module.exports = {
-      "pluginName": "${capabilities.pluginName}",
+      "pluginName": "${manifest.pluginName}",${
+        manifest.packages
+          ? `\n      "packages": ${JSON.stringify(manifest.packages)},`
+          : ""
+      }
       "capabilities": {
-        ${[...(capabilities.capabilities?.entries() ?? [])]
+        ${[...(manifest.capabilities?.entries() ?? [])]
           .map(([capabilityName, provides]) => {
             return `"${capabilityName}":[${provides.join(",").replaceAll(".", "_")}],`;
           })
           .join("\n\t\t")}
       },
       "customPrimitives": [
-        ${[capabilities.customPrimitives?.map((i) => `"${i}"`).join(",") ?? ""]}
+        ${[manifest.customPrimitives?.map((i) => `"${i}"`).join(",") ?? ""]}
       ]
     }
 `;
