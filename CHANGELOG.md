@@ -1,3 +1,15 @@
+# 1.1.0-next.0 (Wed Sep 09 2026)
+
+#### 🚀 Enhancement
+
+- Web manifest enhancement [#11](https://github.com/player-ui/cli/pull/11) ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+#### Authors: 1
+
+- Chloe ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+---
+
 # 1.0.0 (Tue Apr 28 2026)
 
 ### Release Notes
