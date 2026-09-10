@@ -1,3 +1,4 @@
+import type { PlatformPackages } from "@xlr-lib/xlr";
 import type { PlayerCLIPlugin } from "./plugins";
 
 export interface PlayerConfigFileShape {
@@ -40,6 +41,16 @@ export interface PlayerConfigResolvedShape {
 
     /** When converting to XLR, what strategy to use */
     mode?: "plugin" | "types";
+
+    /**
+     * A map of npm package name to its ios/android package identity (name + version). For
+     * non-Bazel consumers, where ios/android are published from separate repos with no build
+     * graph to read those identities from directly, so they're hand-maintained here instead.
+     */
+    platformPackages?: Record<
+      string,
+      Pick<PlatformPackages, "ios" | "android">
+    >;
   };
 
   /** Flattened list of plugins */
