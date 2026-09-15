@@ -1,3 +1,15 @@
+# 1.1.0-next.1 (Tue Sep 15 2026)
+
+#### 🐛 Bug Fix
+
+- Add mobile packages to manifest [#12](https://github.com/player-ui/cli/pull/12) ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+#### Authors: 1
+
+- Chloe ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+---
+
 # 1.1.0-next.0 (Wed Sep 09 2026)
 
 #### 🚀 Enhancement
