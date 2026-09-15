@@ -46,10 +46,12 @@ export default class XLRCompile extends BaseCommand {
     const input = config.xlr?.input ?? flags.input;
     const output = config.xlr?.output ?? flags.output;
     const modeValue = config.xlr?.mode ?? flags.mode;
+    const platformPackages = config.xlr?.platformPackages;
     return {
       inputPath: input,
       outputDir: path.join(output, "xlr"),
       mode: modeValue === "plugin" ? Mode.PLUGIN : Mode.TYPES,
+      platformPackages,
     };
   }
 
@@ -57,12 +59,13 @@ export default class XLRCompile extends BaseCommand {
     /** the status code */
     exitCode: number;
   }> {
-    const { inputPath, outputDir, mode } = await this.getOptions();
+    const { inputPath, outputDir, mode, platformPackages } =
+      await this.getOptions();
     const inputFiles = globby.sync([
       `${inputPath}/**/*.ts`,
       `${inputPath}/**/*.tsx`,
     ]);
-    const packages = getPackages();
+    const packages = getPackages(platformPackages);
     try {
       this.processTypes(inputFiles, outputDir, {}, mode, packages);
     } catch (e: any) {

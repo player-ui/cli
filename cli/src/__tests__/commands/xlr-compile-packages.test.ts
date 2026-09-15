@@ -1,48 +1,14 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
-import { test, expect, describe, beforeEach, afterEach, vi } from "vitest";
-import { Errors } from "@oclif/core";
+import { test, expect, describe, beforeEach, afterEach } from "vitest";
 import XLRCompile from "../../commands/xlr/compile";
-
-/** A plugin package with one asset, laid out the way `xlr compile` expects */
-function writeFixture(dir: string, packageJson?: Record<string, unknown>) {
-  fs.mkdirSync(path.join(dir, "src"), { recursive: true });
-
-  if (packageJson) {
-    fs.writeFileSync(
-      path.join(dir, "package.json"),
-      JSON.stringify(packageJson),
-    );
-  }
-
-  fs.writeFileSync(
-    path.join(dir, "src", "index.ts"),
-    `
-import type { ExtendedPlayerPlugin } from "@player-ui/player";
-
-export interface TestAsset {
-  id: string;
-  type: "test";
-}
-
-export class TestPlugin implements ExtendedPlayerPlugin<[TestAsset]> {
-  name = "test-plugin";
-}
-`,
-  );
-}
-
-/** Silences `Errors.warn` while capturing what it was called with */
-function spyOnWarn() {
-  return vi.spyOn(Errors, "warn").mockImplementation(() => undefined);
-}
-
-function readManifest(dir: string) {
-  return JSON.parse(
-    fs.readFileSync(path.join(dir, "dist", "xlr", "manifest.json"), "utf-8"),
-  );
-}
+import {
+  writeFixture,
+  spyOnWarn,
+  writePlayerConfig,
+  readManifest,
+} from "./xlr-compile-test-helpers";
 
 describe("xlr compile package info", () => {
   /** An isolated root, so nothing on the ambient filesystem can be picked up */
@@ -60,6 +26,8 @@ describe("xlr compile package info", () => {
     delete process.env.BAZEL_STABLE_STATUS_FILE;
     delete process.env.BAZEL_PACKAGE;
     delete process.env.XLR_PACKAGE_NAME;
+    delete process.env.XLR_IOS_PACKAGE_NAME;
+    delete process.env.XLR_ANDROID_PACKAGE_NAME;
     delete process.env.JS_BINARY__EXECROOT;
   });
 
@@ -85,18 +53,17 @@ describe("xlr compile package info", () => {
       });
     });
 
-    test("records the name alone when package.json has no version", async () => {
+    test("omits packages and warns when package.json has no version", async () => {
       writeFixture(workspace, { name: "@test/plugin" });
 
       await XLRCompile.run(["-i", "src", "-o", "dist"]);
 
-      expect(readManifest(workspace).packages).toStrictEqual({
-        react: { name: "@test/plugin" },
-      });
+      expect(readManifest(workspace).packages).toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining('No "version" in'),
+      );
     });
 
-    // The omission must be noisy: a manifest silently losing its `packages` key is the
-    // failure mode this whole path exists to prevent.
     describe("when package.json is missing or incomplete", () => {
       test("omits packages and warns when there is no package.json", async () => {
         writeFixture(workspace);
@@ -120,6 +87,108 @@ describe("xlr compile package info", () => {
         expect(readManifest(workspace).packages).toBeUndefined();
         expect(warn).toHaveBeenCalledWith(
           expect.stringContaining('No "name" in'),
+        );
+      });
+    });
+
+    describe("mobile packages", () => {
+      test("records ios and android from config.xlr.platformPackages, keyed by package name", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = writePlayerConfig(workspace, {
+          "@test/plugin": {
+            ios: { name: "TestPlugin", version: "3.2.1" },
+            android: { name: "com.test:plugin", version: "4.0.0" },
+          },
+        });
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(readManifest(workspace).packages).toStrictEqual({
+          react: { name: "@test/plugin", version: "2.3.4" },
+          ios: { name: "TestPlugin", version: "3.2.1" },
+          android: { name: "com.test:plugin", version: "4.0.0" },
+        });
+      });
+
+      test("a plugin absent from platformPackages gets react only, no warning", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = writePlayerConfig(workspace, {
+          "@some/other-plugin": {
+            ios: { name: "Other", version: "1.0.0" },
+          },
+        });
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(readManifest(workspace).packages).toStrictEqual({
+          react: { name: "@test/plugin", version: "2.3.4" },
+        });
+        expect(warn).not.toHaveBeenCalled();
+      });
+
+      test("drops a platform entry missing a version, without affecting the other platform or react", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = writePlayerConfig(workspace, {
+          "@test/plugin": {
+            ios: { name: "TestPlugin" },
+            android: { name: "com.test:plugin", version: "4.0.0" },
+          },
+        });
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(readManifest(workspace).packages).toStrictEqual({
+          react: { name: "@test/plugin", version: "2.3.4" },
+          android: { name: "com.test:plugin", version: "4.0.0" },
+        });
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringMatching(/"version".*"ios"/),
+        );
+      });
+
+      test("drops a platform entry missing a name, naming the missing field", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = writePlayerConfig(workspace, {
+          "@test/plugin": {
+            android: { version: "4.0.0" },
+          },
+        });
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(readManifest(workspace).packages).toStrictEqual({
+          react: { name: "@test/plugin", version: "2.3.4" },
+        });
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringMatching(/"name".*"android"/),
         );
       });
     });
@@ -193,9 +262,15 @@ describe("xlr compile package info", () => {
       });
     });
 
-    test("omits the version when not stamped", async () => {
+    test("omits packages and warns when not stamped", async () => {
+      // Bazel always provides the status file (ctx.info_file exists on every build), but
+      // without `--stamp` its content has no STABLE_VERSION line — the env var being unset
+      // entirely isn't how an unstamped build actually looks.
       writeFixture(path.join(workspace, pkgPath));
       process.env.XLR_PACKAGE_NAME = "@test/plugin";
+      const statusFile = path.join(workspace, "stable-status.txt");
+      fs.writeFileSync(statusFile, "");
+      process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
 
       await XLRCompile.run([
         "-i",
@@ -206,12 +281,21 @@ describe("xlr compile package info", () => {
 
       expect(
         readManifest(path.join(workspace, pkgPath)).packages,
-      ).toStrictEqual({
-        react: { name: "@test/plugin" },
-      });
+      ).toBeUndefined();
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("No stamped version"),
+      );
     });
 
     describe("when package.json is missing or incomplete", () => {
+      // These exercise react's name-fallback failing; a stamp is needed so the function gets
+      // past the version check to attempt that fallback at all.
+      beforeEach(() => {
+        const statusFile = path.join(workspace, "stable-status.txt");
+        fs.writeFileSync(statusFile, "STABLE_VERSION 1.1.0\n");
+        process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
+      });
+
       test("omits packages and warns when neither XLR_PACKAGE_NAME nor package.json is available", async () => {
         writeFixture(path.join(workspace, pkgPath));
 
@@ -232,6 +316,110 @@ describe("xlr compile package info", () => {
 
       test("omits packages when package.json has no name", async () => {
         writeFixture(path.join(workspace, pkgPath), { version: "2.3.4" });
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).packages,
+        ).toBeUndefined();
+      });
+    });
+
+    describe("mobile packages", () => {
+      test("records ios and android names from env vars, sharing the stamped version", async () => {
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_PACKAGE_NAME = "@test/plugin";
+        process.env.XLR_IOS_PACKAGE_NAME = "PlayerUIReferenceAssets";
+        process.env.XLR_ANDROID_PACKAGE_NAME =
+          "com.intuit.playerui.plugins:reference-assets";
+        const statusFile = path.join(workspace, "stable-status.txt");
+        fs.writeFileSync(statusFile, "STABLE_VERSION 1.1.0\n");
+        process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).packages,
+        ).toStrictEqual({
+          react: { name: "@test/plugin", version: "1.1.0" },
+          ios: { name: "PlayerUIReferenceAssets", version: "1.1.0" },
+          android: {
+            name: "com.intuit.playerui.plugins:reference-assets",
+            version: "1.1.0",
+          },
+        });
+      });
+
+      test("omits ios when only its env var is unset, without affecting android or react", async () => {
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_PACKAGE_NAME = "@test/plugin";
+        process.env.XLR_ANDROID_PACKAGE_NAME =
+          "com.intuit.playerui.plugins:reference-assets";
+        const statusFile = path.join(workspace, "stable-status.txt");
+        fs.writeFileSync(statusFile, "STABLE_VERSION 1.1.0\n");
+        process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).packages,
+        ).toStrictEqual({
+          react: { name: "@test/plugin", version: "1.1.0" },
+          android: {
+            name: "com.intuit.playerui.plugins:reference-assets",
+            version: "1.1.0",
+          },
+        });
+      });
+
+      test("react's absence does not suppress ios/android", async () => {
+        // No package.json and no XLR_PACKAGE_NAME: react's name cannot be resolved.
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_IOS_PACKAGE_NAME = "PlayerUIReferenceAssets";
+        const statusFile = path.join(workspace, "stable-status.txt");
+        fs.writeFileSync(statusFile, "STABLE_VERSION 1.1.0\n");
+        process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).packages,
+        ).toStrictEqual({
+          ios: { name: "PlayerUIReferenceAssets", version: "1.1.0" },
+        });
+      });
+
+      test("omits ios/android when not stamped, even with env vars set", async () => {
+        // Same real-world shape as the react-only "not stamped" case above: the status file
+        // exists, it just has no STABLE_VERSION line.
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_PACKAGE_NAME = "@test/plugin";
+        process.env.XLR_IOS_PACKAGE_NAME = "PlayerUIReferenceAssets";
+        process.env.XLR_ANDROID_PACKAGE_NAME =
+          "com.intuit.playerui.plugins:reference-assets";
+        const statusFile = path.join(workspace, "stable-status.txt");
+        fs.writeFileSync(statusFile, "");
+        process.env.BAZEL_STABLE_STATUS_FILE = statusFile;
 
         await XLRCompile.run([
           "-i",

@@ -3,32 +3,176 @@ import path from "path";
 import { Errors } from "@oclif/core";
 import type { PlatformPackages } from "@xlr-lib/xlr";
 
-/**
- * Where the npm name and version of the package being compiled come from.
- *
- * | | name | version |
- * | --- | --- | --- |
- * | Bazel (stamped) | `XLR_PACKAGE_NAME`, else the package's `package.json` | the `STABLE_VERSION` stamp |
- * | anywhere else | `XLR_PACKAGE_NAME`, else the package's `package.json` | the package's `package.json` |
- *
- * Only the version differs between the two: under Bazel the version in `package.json` is a
- * placeholder that is substituted at publish time, so the stamp is the only real source.
- * Elsewhere the package manager keeps `package.json` current and it is read directly.
- */
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
 
 /**
- * The directory of the package being compiled.
+ * The packages that provide the capabilities being compiled, keyed by platform, or undefined
+ * if none of them can be determined.
  *
- * Bazel runs from the workspace root and names the package in `BAZEL_PACKAGE`; everywhere
- * else the working directory is already the package.
+ * Bazel runs from the workspace root and names the package in `BAZEL_PACKAGE`; everywhere else
+ * the working directory is already the package. That's also the one signal for which path
+ * applies below.
  */
-function getPackageDir(): string {
+export function getPackages(
+  platformPackages?: Record<string, Pick<PlatformPackages, "ios" | "android">>,
+): PlatformPackages | undefined {
   const bazelPackage = process.env.BAZEL_PACKAGE;
-
-  return bazelPackage
+  const packageDir = bazelPackage
     ? path.resolve(process.cwd(), bazelPackage)
     : process.cwd();
+
+  const packages = bazelPackage
+    ? getBazelPackages(packageDir)
+    : getLocalPackages(packageDir, platformPackages);
+
+  if (!packages) {
+    Errors.warn("Omitting package information from the manifest.");
+  }
+
+  return packages;
 }
+
+// ---------------------------------------------------------------------------
+// Bazel: react/ios/android names come from env vars Bazel passes per
+// platform (react falls back to package.json if unset); version is the one
+// Bazel stamp shared by all platforms in a release.
+// ---------------------------------------------------------------------------
+
+/** The version Bazel stamped this build with, read from the stable status file */
+function getStampedVersion(): string | undefined {
+  const statusFile = process.env.BAZEL_STABLE_STATUS_FILE;
+
+  if (!statusFile) {
+    return undefined;
+  }
+
+  // Bazel names the status file relative to the execroot (`File.path`), but the js_binary
+  // launcher changes directory out of the execroot into BAZEL_BINDIR before running the
+  // tool, so re-anchor the path before reading it.
+  const execroot = process.env.JS_BINARY__EXECROOT;
+  const resolved = execroot ? path.join(execroot, statusFile) : statusFile;
+
+  if (!fs.existsSync(resolved)) {
+    return undefined;
+  }
+
+  const line = fs
+    .readFileSync(resolved, "utf-8")
+    .split("\n")
+    .find((l) => l.startsWith("STABLE_VERSION "));
+
+  return line?.slice("STABLE_VERSION ".length).trim() || undefined;
+}
+
+function getBazelPackages(packageDir: string): PlatformPackages | undefined {
+  const version = getStampedVersion();
+
+  // All three platforms share this one stamp; a build without it can't produce a complete
+  // entry for any of them, so bail out once instead of warning per platform below.
+  if (!version) {
+    Errors.warn(
+      "No stamped version; omitting package information from the manifest.",
+    );
+    return undefined;
+  }
+
+  const reactName =
+    process.env.XLR_PACKAGE_NAME ||
+    getPackageJsonName(packageDir, getPackageJson(packageDir));
+  const iosName = process.env.XLR_IOS_PACKAGE_NAME;
+  const androidName = process.env.XLR_ANDROID_PACKAGE_NAME;
+
+  const packages: PlatformPackages = {
+    ...(reactName ? { react: { name: reactName, version } } : {}),
+    ...(iosName ? { ios: { name: iosName, version } } : {}),
+    ...(androidName ? { android: { name: androidName, version } } : {}),
+  };
+
+  return Object.keys(packages).length > 0 ? packages : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Non-Bazel: react from package.json. There's no build graph here to read
+// ios/android from — those live in entirely separate repos with their own
+// release cadence — so they come from an optional, hand-maintained map
+// instead (config.xlr.platformPackages).
+// ---------------------------------------------------------------------------
+
+function getLocalPackages(
+  packageDir: string,
+  platformPackages:
+    | Record<string, Pick<PlatformPackages, "ios" | "android">>
+    | undefined,
+): PlatformPackages | undefined {
+  const packageJson = getPackageJson(packageDir);
+  const name = getPackageJsonName(packageDir, packageJson);
+
+  if (!name) {
+    return undefined;
+  }
+
+  const version = getPackageJsonVersion(packageJson);
+
+  if (!version) {
+    Errors.warn(`No "version" in ${path.join(packageDir, "package.json")}.`);
+    return undefined;
+  }
+
+  const mobilePackages = platformPackages
+    ? getMobilePackages(platformPackages, name)
+    : undefined;
+
+  return { react: { name, version }, ...mobilePackages };
+}
+
+/**
+ * The ios/android entry for `packageName` in `platformPackages`, if any. A package absent from
+ * the map simply has no mobile packages, silently — not an error.
+ */
+function getMobilePackages(
+  platformPackages: Record<string, Pick<PlatformPackages, "ios" | "android">>,
+  packageName: string,
+): Pick<PlatformPackages, "ios" | "android"> | undefined {
+  const entry = platformPackages[packageName];
+
+  if (!entry) {
+    return undefined;
+  }
+
+  const packages: Pick<PlatformPackages, "ios" | "android"> = {};
+
+  (["ios", "android"] as const).forEach((platform) => {
+    const platformPackage = entry[platform];
+
+    if (!platformPackage) {
+      return;
+    }
+
+    if (!platformPackage.name) {
+      Errors.warn(
+        `No "name" for "${platform}" of "${packageName}" in config.xlr.platformPackages; omitting it from the manifest.`,
+      );
+      return;
+    }
+
+    if (!platformPackage.version) {
+      Errors.warn(
+        `No "version" for "${platform}" of "${packageName}" in config.xlr.platformPackages; omitting it from the manifest.`,
+      );
+      return;
+    }
+
+    packages[platform] = platformPackage;
+  });
+
+  return packages;
+}
+
+// ---------------------------------------------------------------------------
+// Shared: package.json helpers, used by both the Bazel and non-Bazel paths above.
+// ---------------------------------------------------------------------------
 
 /** The parsed `package.json` of the package being compiled, or undefined if there isn't a readable one */
 function getPackageJson(
@@ -75,57 +219,4 @@ function getPackageJsonVersion(
   const version = packageJson?.version;
 
   return typeof version === "string" && version ? version : undefined;
-}
-
-/** The version Bazel stamped this build with, read from the stable status file */
-function getStampedVersion(): string | undefined {
-  const statusFile = process.env.BAZEL_STABLE_STATUS_FILE;
-
-  if (!statusFile) {
-    return undefined;
-  }
-
-  // Bazel names the status file relative to the execroot (`File.path`), but the js_binary
-  // launcher changes directory out of the execroot into BAZEL_BINDIR before running the
-  // tool, so re-anchor the path before reading it.
-  const execroot = process.env.JS_BINARY__EXECROOT;
-  const resolved = execroot ? path.join(execroot, statusFile) : statusFile;
-
-  if (!fs.existsSync(resolved)) {
-    return undefined;
-  }
-
-  const line = fs
-    .readFileSync(resolved, "utf-8")
-    .split("\n")
-    .find((l) => l.startsWith("STABLE_VERSION "));
-
-  return line?.slice("STABLE_VERSION ".length).trim() || undefined;
-}
-
-/**
- * The npm package that provides the capabilities being compiled, or undefined if its name
- * cannot be determined.
- */
-export function getPackages(): PlatformPackages | undefined {
-  const packageDir = getPackageDir();
-  const packageJson = getPackageJson(packageDir);
-
-  // Bazel only knows the package path, so it passes the npm name through the environment.
-  const name =
-    process.env.XLR_PACKAGE_NAME || getPackageJsonName(packageDir, packageJson);
-
-  if (!name) {
-    Errors.warn("Omitting package information from the manifest.");
-    return undefined;
-  }
-
-  // Only a stamped Bazel build produces a status file; otherwise `package.json` is the source.
-  const version = getStampedVersion() ?? getPackageJsonVersion(packageJson);
-
-  // TODO: only `react` is generated, because XLR is compiled from TypeScript and there is no
-  // equivalent for iOS or Android. Native configurations will be added later.
-  return {
-    react: { name, ...(version ? { version } : {}) },
-  };
 }
