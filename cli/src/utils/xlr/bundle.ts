@@ -77,9 +77,7 @@ function resolveSourceDir(source: string): string | undefined {
   return undefined;
 }
 
-function readSourceManifest(
-  manifestFile: string,
-): SourceManifest | undefined {
+function readSourceManifest(manifestFile: string): SourceManifest | undefined {
   try {
     return JSON.parse(fs.readFileSync(manifestFile, "utf-8"));
   } catch {
