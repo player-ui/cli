@@ -8,7 +8,7 @@ import {
   spyOnWarn,
   writePlayerConfig,
   readManifest,
-} from "./xlr-compile-test-helpers";
+} from "./xlr-test-helpers";
 
 describe("xlr compile package info", () => {
   /** An isolated root, so nothing on the ambient filesystem can be picked up */
