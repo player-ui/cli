@@ -7,6 +7,7 @@ import type { PlatformPackages } from "@xlr-lib/xlr";
 interface SourceManifest {
   pluginName?: string;
   packages?: PlatformPackages;
+  metaData?: Record<string, unknown>;
   capabilities?: Record<string, Array<string>>;
 }
 
@@ -18,9 +19,8 @@ const BUNDLED_CAPABILITY_TYPES = ["Assets", "Views"] as const;
 
 export interface BundledManifestEntry extends PlatformPackages {
   /**
-   * Lets a topic pick between colliding entries, in the shape a
-   * `@player-ui/partial-match-registry` discriminator uses at runtime (e.g. `{ kind: "card" }`).
-   * Comes from `bundle`'s own config, not the source's manifest.
+   * Lets a consumer pick between entries colliding on the same type name. Copied through from
+   * the source's own manifest, where its own `xlr compile` stamped it.
    */
   metaData?: Record<string, unknown>;
 }
@@ -138,7 +138,6 @@ function appendUnlessIdentical(
 export function bundleManifests(
   sources: Array<string>,
   manifestPath: string,
-  metaDataBySource: Record<string, Record<string, unknown>> = {},
 ): BundledManifest {
   const capabilities: Record<string, Array<BundledManifestEntry>> = {};
 
@@ -155,11 +154,26 @@ export function bundleManifests(
     }
 
     const manifestDir = path.dirname(manifestFile);
-    const metaData = metaDataBySource[source];
     const entry: BundledManifestEntry = {
       ...manifest.packages,
-      ...(metaData ? { metaData } : {}),
+      ...(manifest.metaData ? { metaData: manifest.metaData } : {}),
     };
+
+    const hasPackageIdentity = Boolean(
+      manifest.packages?.react ||
+      manifest.packages?.ios ||
+      manifest.packages?.android,
+    );
+    const willContributeEntries = BUNDLED_CAPABILITY_TYPES.some(
+      (capabilityType) =>
+        (manifest.capabilities?.[capabilityType] ?? []).length > 0,
+    );
+
+    if (!hasPackageIdentity && willContributeEntries) {
+      Errors.warn(
+        `"${source}" has no package identity in its own manifest (its own "xlr compile" likely never ran, or ran without config.xlr.platformPackages) — the entries it contributes won't tell a topic what to install.`,
+      );
+    }
 
     BUNDLED_CAPABILITY_TYPES.forEach((capabilityType) => {
       const capabilityNames = manifest.capabilities?.[capabilityType] ?? [];

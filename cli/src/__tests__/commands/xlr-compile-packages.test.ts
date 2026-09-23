@@ -28,6 +28,7 @@ describe("xlr compile package info", () => {
     delete process.env.XLR_PACKAGE_NAME;
     delete process.env.XLR_IOS_PACKAGE_NAME;
     delete process.env.XLR_ANDROID_PACKAGE_NAME;
+    delete process.env.XLR_META_DATA;
     delete process.env.JS_BINARY__EXECROOT;
   });
 
@@ -190,6 +191,63 @@ describe("xlr compile package info", () => {
         expect(warn).toHaveBeenCalledWith(
           expect.stringMatching(/"name".*"android"/),
         );
+      });
+    });
+
+    describe("metaData", () => {
+      test("stamps config.xlr.metaData into the manifest", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = path.join(workspace, "player.config.json");
+        fs.writeFileSync(
+          configPath,
+          JSON.stringify({ xlr: { metaData: { kind: "test" } } }),
+        );
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(readManifest(workspace).metaData).toStrictEqual({
+          kind: "test",
+        });
+      });
+
+      test("omits metaData when the config sets none", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+
+        await XLRCompile.run(["-i", "src", "-o", "dist"]);
+
+        expect(readManifest(workspace).metaData).toBeUndefined();
+      });
+
+      test("carries metaData into the manifest.js wrapper too", async () => {
+        writeFixture(workspace, { name: "@test/plugin", version: "2.3.4" });
+        const configPath = path.join(workspace, "player.config.json");
+        fs.writeFileSync(
+          configPath,
+          JSON.stringify({ xlr: { metaData: { kind: "test" } } }),
+        );
+
+        await XLRCompile.run([
+          "-i",
+          "src",
+          "-o",
+          "dist",
+          "--config",
+          configPath,
+        ]);
+
+        expect(
+          fs.readFileSync(
+            path.join(workspace, "dist", "xlr", "manifest.js"),
+            "utf-8",
+          ),
+        ).toContain('"metaData": {"kind":"test"}');
       });
     });
   });
@@ -430,6 +488,58 @@ describe("xlr compile package info", () => {
 
         expect(
           readManifest(path.join(workspace, pkgPath)).packages,
+        ).toBeUndefined();
+      });
+    });
+
+    describe("metaData", () => {
+      test("stamps XLR_META_DATA into the manifest", async () => {
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_META_DATA = JSON.stringify({ kind: "test" });
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).metaData,
+        ).toStrictEqual({ kind: "test" });
+      });
+
+      test("omits metaData and warns when XLR_META_DATA is not valid JSON", async () => {
+        writeFixture(path.join(workspace, pkgPath));
+        process.env.XLR_META_DATA = "{kind:test}";
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).metaData,
+        ).toBeUndefined();
+        expect(warn).toHaveBeenCalledWith(
+          expect.stringContaining("XLR_META_DATA"),
+        );
+      });
+
+      test("omits metaData when XLR_META_DATA is unset", async () => {
+        writeFixture(path.join(workspace, pkgPath));
+
+        await XLRCompile.run([
+          "-i",
+          path.join(pkgPath, "src"),
+          "-o",
+          path.join(pkgPath, "dist"),
+        ]);
+
+        expect(
+          readManifest(path.join(workspace, pkgPath)).metaData,
         ).toBeUndefined();
       });
     });

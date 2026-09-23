@@ -39,7 +39,6 @@ export default class XLRBundle extends BaseCommand {
       sources: flags.source ?? config.xlr?.bundleSources ?? [],
       manifestPath: flags.manifestPath,
       outputDir: path.join(flags.output, "xlr"),
-      metaDataBySource: config.xlr?.bundleMetaData,
     };
   }
 
@@ -47,10 +46,9 @@ export default class XLRBundle extends BaseCommand {
     /** the status code */
     exitCode: number;
   }> {
-    const { sources, manifestPath, outputDir, metaDataBySource } =
-      await this.getOptions();
+    const { sources, manifestPath, outputDir } = await this.getOptions();
 
-    const manifest = bundleManifests(sources, manifestPath, metaDataBySource);
+    const manifest = bundleManifests(sources, manifestPath);
     writeBundledManifest(outputDir, manifest);
 
     return { exitCode: 0 };

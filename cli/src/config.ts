@@ -56,11 +56,11 @@ export interface PlayerConfigResolvedShape {
     >;
 
     /**
-     * A map of `xlr bundle`'s `--source` value to metadata attached to that source's
-     * entries in the collated manifest. Only needed once `xlr bundle` finds two sources
-     * providing the same type name
+     * Stamped into this package's own compiled manifest, and carried through by `xlr bundle`
+     * into every entry this package contributes. Only load-bearing once two packages provide
+     * the same type name, where it's what tells their entries apart.
      */
-    bundleMetaData?: Record<string, Record<string, unknown>>;
+    metaData?: Record<string, unknown>;
 
     /**
      * The packages (or directories) for `xlr bundle` to collate, as data instead of repeated

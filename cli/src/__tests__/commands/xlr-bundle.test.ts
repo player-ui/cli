@@ -32,8 +32,8 @@ describe("xlr bundle", () => {
   /**
    * These exercise `bundle`'s core flattening/collision/error behavior via explicit `-s` flags —
    * the only input mechanism `rules_player`'s `xlr_bundle` macro uses (it never writes a config
-   * file, so `config.xlr.bundleSources`/`bundleMetaData` are unreachable from Bazel). Behavior
-   * covered here applies identically under Bazel and non-Bazel invocation.
+   * file, so `config.xlr.bundleSources` is unreachable from Bazel). Behavior covered here applies
+   * identically under Bazel and non-Bazel invocation.
    */
   describe("via --source flags", () => {
     test("flattens Assets/Views into one manifest keyed by type name", async () => {
@@ -98,6 +98,33 @@ describe("xlr bundle", () => {
       expect(readBundledManifest(path.join(workspace, "out"))).toStrictEqual({
         capabilities: {},
       });
+    });
+
+    test("warns when a source contributing entries has no package identity of its own", async () => {
+      const sourceA = path.join(workspace, "source-a");
+      writeSource(sourceA, {
+        assets: [{ capabilityName: "Assets.InputAsset", typeName: "input" }],
+      });
+
+      await XLRBundle.run(["-s", sourceA, "-o", "out"]);
+
+      expect(warn).toHaveBeenCalledWith(
+        expect.stringContaining("no package identity"),
+      );
+      expect(readBundledManifest(path.join(workspace, "out"))).toStrictEqual({
+        capabilities: { input: [{}] },
+      });
+    });
+
+    test("does not warn about missing package identity for a source with no Assets/Views at all", async () => {
+      const sourceA = path.join(workspace, "source-a");
+      writeSource(sourceA, {});
+
+      await XLRBundle.run(["-s", sourceA, "-o", "out"]);
+
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining("no package identity"),
+      );
     });
 
     test("respects --manifestPath for a non-default convention", async () => {
@@ -194,15 +221,90 @@ describe("xlr bundle", () => {
         readBundledManifest(path.join(workspace, "out")),
       );
     });
+
+    test("copies a source's own metaData through onto every entry it contributes", async () => {
+      const sourceA = path.join(workspace, "source-a");
+      writeSource(sourceA, {
+        packages: { react: { name: "@test/a", version: "1.0.0" } },
+        metaData: { kind: "test" },
+        assets: [
+          { capabilityName: "Assets.ActionAsset", typeName: "action" },
+          { capabilityName: "Assets.InputAsset", typeName: "input" },
+        ],
+      });
+
+      await XLRBundle.run(["-s", sourceA, "-o", "out"]);
+
+      expect(readBundledManifest(path.join(workspace, "out"))).toStrictEqual({
+        capabilities: {
+          action: [
+            {
+              react: { name: "@test/a", version: "1.0.0" },
+              metaData: { kind: "test" },
+            },
+          ],
+          input: [
+            {
+              react: { name: "@test/a", version: "1.0.0" },
+              metaData: { kind: "test" },
+            },
+          ],
+        },
+      });
+    });
+
+    test("keeps colliding entries apart by each source's own metaData", async () => {
+      const sourceA = path.join(workspace, "source-a");
+      writeSource(sourceA, {
+        packages: { react: { name: "@test/a", version: "1.0.0" } },
+        metaData: { kind: "test" },
+        assets: [{ capabilityName: "Assets.ActionAsset", typeName: "action" }],
+      });
+
+      const sourceB = path.join(workspace, "source-b");
+      writeSource(sourceB, {
+        packages: { react: { name: "@test/custom-action", version: "1.0.0" } },
+        metaData: { kind: "other" },
+        assets: [{ capabilityName: "Assets.ActionAsset", typeName: "action" }],
+      });
+
+      await XLRBundle.run(["-s", sourceA, "-s", sourceB, "-o", "out"]);
+
+      expect(
+        readBundledManifest(path.join(workspace, "out")).capabilities.action,
+      ).toStrictEqual([
+        {
+          react: { name: "@test/a", version: "1.0.0" },
+          metaData: { kind: "test" },
+        },
+        {
+          react: { name: "@test/custom-action", version: "1.0.0" },
+          metaData: { kind: "other" },
+        },
+      ]);
+    });
+
+    test("omits metaData entirely for a source that declared none", async () => {
+      const sourceA = path.join(workspace, "source-a");
+      writeSource(sourceA, {
+        packages: { react: { name: "@test/a", version: "1.0.0" } },
+        assets: [{ capabilityName: "Assets.InputAsset", typeName: "input" }],
+      });
+
+      await XLRBundle.run(["-s", sourceA, "-o", "out"]);
+
+      expect(
+        readBundledManifest(path.join(workspace, "out")).capabilities.input,
+      ).toStrictEqual([{ react: { name: "@test/a", version: "1.0.0" } }]);
+    });
   });
 
   /**
-   * `config.xlr.bundleSources`/`bundleMetaData` are the non-Bazel path only — how
-   * `cg-player-plugin-web`'s `components` package supplies its source list and collision labels
-   * without hand-typing `-s`/`-c` flags into a build script. Bazel's `xlr_bundle` macro always
+   * `config.xlr.bundleSources` is the non-Bazel path only — how a DSL package supplies its source
+   * list without hand-typing `-s` flags into a build script. Bazel's `xlr_bundle` macro always
    * uses explicit `-s` flags instead (see the sibling describe block above).
    */
-  describe("via config.xlr.bundleSources / bundleMetaData (non-Bazel only)", () => {
+  describe("via config.xlr.bundleSources (non-Bazel only)", () => {
     test("reads the source list from config.xlr.bundleSources when no --source flags are given", async () => {
       const sourceA = path.join(workspace, "source-a");
       writeSource(sourceA, {
@@ -251,49 +353,6 @@ describe("xlr bundle", () => {
           text: [{ react: { name: "@test/b", version: "2.0.0" } }],
         },
       });
-    });
-
-    test("keeps every entry when two sources provide the same type name, tagging with config.xlr.bundleMetaData", async () => {
-      const sourceA = path.join(workspace, "source-a");
-      writeSource(sourceA, {
-        packages: { react: { name: "@test/a", version: "1.0.0" } },
-        assets: [{ capabilityName: "Assets.ActionAsset", typeName: "action" }],
-      });
-
-      const sourceB = path.join(workspace, "source-b");
-      writeSource(sourceB, {
-        packages: { react: { name: "@test/custom-action", version: "1.0.0" } },
-        assets: [{ capabilityName: "Assets.ActionAsset", typeName: "action" }],
-      });
-
-      const configPath = path.join(workspace, "player.config.json");
-      fs.writeFileSync(
-        configPath,
-        JSON.stringify({
-          xlr: { bundleMetaData: { [sourceB]: { kind: "card" } } },
-        }),
-      );
-
-      await XLRBundle.run([
-        "-s",
-        sourceA,
-        "-s",
-        sourceB,
-        "-o",
-        "out",
-        "--config",
-        configPath,
-      ]);
-
-      expect(
-        readBundledManifest(path.join(workspace, "out")).capabilities.action,
-      ).toStrictEqual([
-        { react: { name: "@test/a", version: "1.0.0" } },
-        {
-          react: { name: "@test/custom-action", version: "1.0.0" },
-          metaData: { kind: "card" },
-        },
-      ]);
     });
   });
 });

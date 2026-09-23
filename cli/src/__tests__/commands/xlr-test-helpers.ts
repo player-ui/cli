@@ -63,6 +63,7 @@ export function writeSource(
   options: {
     manifestPath?: string;
     packages?: Record<string, unknown>;
+    metaData?: Record<string, unknown>;
     assets?: Array<{ capabilityName: string; typeName: string | undefined }>;
     views?: Array<{ capabilityName: string; typeName: string | undefined }>;
   },
@@ -90,6 +91,7 @@ export function writeSource(
     JSON.stringify({
       pluginName: path.basename(dir),
       ...(options.packages ? { packages: options.packages } : {}),
+      ...(options.metaData ? { metaData: options.metaData } : {}),
       capabilities: {
         Assets: assets.map((a) => a.capabilityName),
         Views: views.map((v) => v.capabilityName),
