@@ -13,14 +13,6 @@ import { Mode, customPrimitives } from "../../utils/xlr/consts";
 import { getPackages } from "../../utils/xlr/packages";
 
 /**
- * `Manifest`, plus the `metaData` field the pinned `@xlr-lib/xlr` predates.
- * TODO: drop this and use `Manifest` directly once a xlr version carrying `metaData` is published.
- */
-type ManifestWithMetaData = Manifest & {
-  metaData?: Record<string, unknown>;
-};
-
-/**
  * This package's `metaData`, from `XLR_META_DATA` under Bazel (where there's no config file to
  * read) or from `config.xlr.metaData` everywhere else — the same split `getPackages` makes.
  */
@@ -185,7 +177,7 @@ export default class XLRCompile extends BaseCommand {
       throw new Error("Error: Unable to parse any XLRs in package");
     }
 
-    const manifest: ManifestWithMetaData = {
+    const manifest: Manifest = {
       ...capabilities,
       ...(packages ? { packages } : {}),
       ...(metaData ? { metaData } : {}),
