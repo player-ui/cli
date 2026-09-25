@@ -10,6 +10,9 @@ export interface PlayerConfigFileShape {
 
   /** A list of presets to apply */
   presets?: Array<PlayerConfigFileShape | string>;
+
+  /** Options related to XLR compilation step */
+  xlr?: PlayerConfigResolvedShape["xlr"];
 }
 
 export interface PlayerConfigResolvedShape {
@@ -51,6 +54,20 @@ export interface PlayerConfigResolvedShape {
       string,
       Pick<PlatformPackages, "ios" | "android">
     >;
+
+    /**
+     * Stamped into this package's own compiled manifest, and carried through by `xlr bundle`
+     * into every entry this package contributes. Only load-bearing once two packages provide
+     * the same type name, where it's what tells their entries apart.
+     */
+    metaData?: Record<string, unknown>;
+
+    /**
+     * The packages (or directories) for `xlr bundle` to collate, as data instead of repeated
+     * `--source` flags — the list a decomposed DSL package depends on is expected to grow past
+     * what's reasonable to hand-type into a build script command.
+     */
+    bundleSources?: Array<string>;
   };
 
   /** Flattened list of plugins */

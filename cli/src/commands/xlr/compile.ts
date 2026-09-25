@@ -1,4 +1,4 @@
-import { Flags } from "@oclif/core";
+import { Errors, Flags } from "@oclif/core";
 import ts from "typescript";
 import fs from "fs";
 import path from "path";
@@ -11,6 +11,27 @@ import { BaseCommand } from "../../utils/base-command";
 import { pluginVisitor, fileVisitor } from "../../utils/xlr/visitors";
 import { Mode, customPrimitives } from "../../utils/xlr/consts";
 import { getPackages } from "../../utils/xlr/packages";
+
+/**
+ * This package's `metaData`, from `XLR_META_DATA` under Bazel (where there's no config file to
+ * read) or from `config.xlr.metaData` everywhere else — the same split `getPackages` makes.
+ */
+function getMetaData(
+  configMetaData?: Record<string, unknown>,
+): Record<string, unknown> | undefined {
+  const stamped = process.env.XLR_META_DATA;
+
+  if (!stamped) {
+    return configMetaData;
+  }
+
+  try {
+    return JSON.parse(stamped);
+  } catch {
+    Errors.warn("Could not parse XLR_META_DATA as JSON; omitting it.");
+    return configMetaData;
+  }
+}
 
 /**
  * Exports TS Interfaces/Types to XLR format
@@ -52,6 +73,7 @@ export default class XLRCompile extends BaseCommand {
       outputDir: path.join(output, "xlr"),
       mode: modeValue === "plugin" ? Mode.PLUGIN : Mode.TYPES,
       platformPackages,
+      metaData: getMetaData(config.xlr?.metaData),
     };
   }
 
@@ -59,7 +81,7 @@ export default class XLRCompile extends BaseCommand {
     /** the status code */
     exitCode: number;
   }> {
-    const { inputPath, outputDir, mode, platformPackages } =
+    const { inputPath, outputDir, mode, platformPackages, metaData } =
       await this.getOptions();
     const inputFiles = globby.sync([
       `${inputPath}/**/*.ts`,
@@ -67,7 +89,7 @@ export default class XLRCompile extends BaseCommand {
     ]);
     const packages = getPackages(platformPackages);
     try {
-      this.processTypes(inputFiles, outputDir, {}, mode, packages);
+      this.processTypes(inputFiles, outputDir, {}, mode, packages, metaData);
     } catch (e: any) {
       console.log("");
       console.log(
@@ -96,6 +118,7 @@ export default class XLRCompile extends BaseCommand {
     options: ts.CompilerOptions,
     mode: Mode = Mode.PLUGIN,
     packages?: PlatformPackages,
+    metaData?: Record<string, unknown>,
   ): void {
     // Build a program using the set of root file names in fileNames
     const program = ts.createProgram(fileNames, options);
@@ -157,6 +180,7 @@ export default class XLRCompile extends BaseCommand {
     const manifest: Manifest = {
       ...capabilities,
       ...(packages ? { packages } : {}),
+      ...(metaData ? { metaData } : {}),
     };
 
     // print out the manifest files
@@ -174,6 +198,10 @@ export default class XLRCompile extends BaseCommand {
       "pluginName": "${manifest.pluginName}",${
         manifest.packages
           ? `\n      "packages": ${JSON.stringify(manifest.packages)},`
+          : ""
+      }${
+        manifest.metaData
+          ? `\n      "metaData": ${JSON.stringify(manifest.metaData)},`
           : ""
       }
       "capabilities": {
