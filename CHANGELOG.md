@@ -1,3 +1,15 @@
+# 1.1.0-next.2 (Fri Sep 25 2026)
+
+#### 🐛 Bug Fix
+
+- bundle xlr manifest [#13](https://github.com/player-ui/cli/pull/13) ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+#### Authors: 1
+
+- Chloe ([@cehan-Chloe](https://github.com/cehan-Chloe))
+
+---
+
 # 1.1.0-next.1 (Tue Sep 15 2026)
 
 #### 🐛 Bug Fix
