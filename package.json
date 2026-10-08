@@ -9,9 +9,9 @@
   },
   "engines": {
     "node": "^22.21.1",
-    "pnpm": "^10.13.1"
+    "pnpm": "^10.16.0"
   },
-  "packageManager": "pnpm@10.13.1",
+  "packageManager": "pnpm@10.34.6",
   "dependencies": {
     "@auto-it/version-file": "^10.46.0",
     "@babel/plugin-transform-react-jsx-source": "^7.23.3",
@@ -62,7 +62,7 @@
   },
   "volta": {
     "node": "22.21.1",
-    "pnpm": "10.13.1"
+    "pnpm": "10.34.6"
   },
   "pnpm": {
     "onlyBuiltDependencies": []
